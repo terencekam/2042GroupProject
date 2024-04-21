@@ -308,7 +308,7 @@ bool isCorrectDate(string date , int *Year , int*Month , int*Day) {
 int main() {
     string tempselect;
     int select = 0;
-    while(select!=5){
+    while(select!=6){
         cout << "Welcome Gift Redemption System\n"
                 "*** Main Menu ***\n"
                 "[1] Load Starting Data\n"
