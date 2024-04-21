@@ -323,7 +323,7 @@ int main() {
         }
         try {
             if(!hasLoadData){
-                if(tempselect != "1"){
+                if(tempselect != "1"&&tempselect != "6"){
                     cout << "You haven't load the data!\n";
                     continue;
                 }
