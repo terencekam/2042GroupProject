@@ -435,7 +435,6 @@ int main() {
                         } while (PointBalance < 0);
                         AddCustomer(Customer(customerID , getAutoRank(*date) , PointBalance));
                     }
-
                     break;
                 }
                 case 4:
