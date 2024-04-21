@@ -1,0 +1,458 @@
+#include <algorithm>
+#include <chrono>
+#include <iostream>
+#include <list>
+#include <map>
+#include <string.h>
+#include <vector>
+#include <climits>
+#include <format>
+
+class Customer;
+using namespace std;
+bool Fo(char , int);
+bool HasCustomer(char CustomerID);
+bool DeleteCustomer(char CustomerID);
+bool AddCustomer(Customer c) ;
+bool hasLoadData = false;
+
+enum Rank {
+    G ,S ,B
+};
+map<Rank , string> RanktoString = {
+        {G , "G"},
+        {S , "S"},
+        {B , "B"}
+};
+struct Date{
+    Date(int year , int month , int day) {
+        Year = year;
+        Month = month;
+        Day = day;
+    }
+    int Year;
+    int Month;
+    int Day;
+    string toString() {
+        return Year==0?"No Date":"Year: " + std::to_string(Year) + ", Month: " + std::to_string(Month) + ", Day: " + std::to_string(Day);
+    }
+};
+time_t now = time(0);
+tm *ltm = localtime(&now);
+Date today = Date(1900 + ltm->tm_year , 1 + ltm->tm_mon , ltm->tm_mday);
+Rank getAutoRank(Date date) {
+    int yeardiff;
+    yeardiff = today.Year-date.Year;
+
+    if (yeardiff > 1) {
+        return G;
+    }
+    if (yeardiff > 0) {
+        int tempTodayMonth;
+        int tempTodayDay;
+        int tempDateMonth;
+        int tempDateDay;
+        if ((today.Month == 2||date.Month == 2) &&(today.Day==29||date.Day==29)) {
+            tempTodayMonth = today.Day==29?today.Month==2?3:today.Month:today.Month;
+            tempTodayDay = today.Day==29?today.Month==2?1:today.Day:today.Day;
+            tempDateMonth = date.Day==29?date.Month==2?3:date.Month:date.Month;
+            tempDateDay = date.Day==29?date.Month==2?1:date.Day:date.Day;
+        }else {
+            tempDateDay = date.Day;
+            tempDateMonth = date.Month;
+            tempTodayDay = today.Day;
+            tempTodayMonth = today.Month;
+        }
+        int totalMonth = 0;
+        totalMonth = 12 - tempDateMonth;
+        tempDateMonth = 0;
+
+        if (tempTodayMonth - tempDateMonth > 1) {
+            totalMonth += tempTodayMonth - tempDateMonth -1;
+        }
+        if (tempTodayDay <= tempDateDay) {
+            totalMonth++;
+        }
+        if (totalMonth >=12) {
+            return G;
+        }
+        if (totalMonth >= 6) {
+            return S;
+        }
+        return B;
+    }
+}
+
+class Customer {
+private:
+    string CustomerID;
+    Rank Ranking;
+    int PointBalance;
+public:
+    Customer(string customerID , Rank rank , int pointBalance) {
+        CustomerID = customerID;
+        Ranking = rank;
+        PointBalance = pointBalance;
+    }
+    string getCustomerID() {
+        return CustomerID;
+    }
+    Rank getRank() {
+        return Ranking;
+    }
+    int getPointBalance() {
+        return PointBalance;
+    }
+    void setPointBalance(int PointBalance) {
+        this -> PointBalance = PointBalance;
+    }
+    void toString() {
+        printf("%-15s %-s %-d\n",CustomerID.c_str(), to_string(Ranking).c_str() , PointBalance);
+    }
+};
+
+vector<Customer> customerList;
+
+struct GiftRecord{
+    enum GiftCategory {
+        A ,B ,C , D
+    };
+    map<GiftCategory , string> RanktoString = {
+            {A , "Audio & Video"},
+            {B , "Kitchenware"},
+            {C , "Coupons"},
+            {D , "Computer Accessories"},
+    };
+    char *GiftID = new char[3];
+    char *GiftDiscription = new char[100];
+    int price{};
+    int PointRequired{};
+    enum GiftCategory giftCategory;
+    GiftRecord(char *gift_id, char *gift_discription, int price, int point_required){
+        giftCategory = static_cast<GiftCategory>(gift_id[0]);
+        GiftID = gift_id;
+        GiftDiscription = gift_discription;
+        this -> price = price;
+        PointRequired = point_required;
+    }
+    void toString(){
+        printf("%-3s %-5d %-5d %s\n",GiftID , price , PointRequired , GiftDiscription);
+    }
+};
+
+vector<GiftRecord> giftRecordList ;
+
+bool HasCustomer(string CustomerID) {
+    for (auto customer_list : customerList) {
+        if(customer_list.getCustomerID() == CustomerID) {
+            return true;
+        }
+    }
+    return false;
+}
+
+Customer GetCustomer(string CustomerID) {
+    for (auto customer_list : customerList) {
+        if(customer_list.getCustomerID() == CustomerID) {
+            return customer_list;
+        }
+    }
+    return {"" , G , -1};
+}
+
+bool DeleteCustomer(string CustomerID) {
+    if(HasCustomer(CustomerID)) {
+        for (int i = 0 ; i< customerList.size() ; i++) {
+            if(customerList[i].getCustomerID() == CustomerID) {
+                customerList.erase(customerList.begin()+i);
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+bool AddCustomer(Customer c) {
+    if(HasCustomer(c.getCustomerID())) {
+        return false;
+    }
+    customerList.emplace_back(c);
+    return true;
+}
+bool HasRecord(GiftRecord r) {
+    for (auto gift_record_list : giftRecordList) {
+        if (r.GiftID == gift_record_list.GiftID) {
+            return true;
+        }
+    }
+    return false;
+}
+void AddRecord(GiftRecord r) {
+    if(!HasRecord(r)) {
+        giftRecordList.emplace_back(r);
+    }
+}
+bool GiftComparer(const  GiftRecord &a , const GiftRecord &b) {
+    if (tolower(*a.GiftID) > tolower(*b.GiftID)) {
+        return false;
+    }
+    return true;
+}
+void SortGiftList() {
+    sort(giftRecordList.begin() , giftRecordList.end() , GiftComparer);
+}
+bool CustomerComparer(Customer a , Customer b) {
+    if (tolower(*a.getCustomerID().c_str()) > tolower(*b.getCustomerID().c_str())) {
+        return false;
+    }
+    return true;
+}
+void SortCustomerList() {
+    sort(customerList.begin() , customerList.end() , CustomerComparer);
+}
+void initialsiation() {
+    list<Customer> l = {Customer("Tommy2015",B,8500),
+                        Customer("DavidChan",B,22800),
+                        Customer("Luna123",B,650),
+                        Customer("TigerMan",B,14000),
+                        Customer("Max5678",S,2580),
+                        Customer("Neo2000",S,8000),
+                        Customer("CCTang",S,33554),
+                        Customer("EchoWong",G,8650),
+                        Customer("Rubychow",G,28000),
+                        Customer("Ivy2023",G,12340)};
+    for (const auto& customer : l) {
+        AddCustomer(customer);
+    }
+    list<GiftRecord> li = {GiftRecord("A01","LG Internet TV",3900,19000),
+                           GiftRecord("A02","Pioneer Hifi Set",2400,11500),
+                           GiftRecord("A03","Sony DVD Player",400,2000),
+                           GiftRecord("B01","Healthy Air Fryer",1500,7300),
+                           GiftRecord("B02","Tefal Microwave Oven",480,2400),
+                           GiftRecord("B03","Famous Coffee Maker",1800,8800),
+                           GiftRecord("B04","Smart Rice Cooker",600,2900),
+                           GiftRecord("B05","TechCook Toaster Oven",450,2250),
+                           GiftRecord("C01","Wellcome 50 Coupon",50,250),
+                           GiftRecord("C02","Mannings 50 Coupon",50,250),
+                           GiftRecord("C03","Carol Restaurant 100 Coupon",100,500),
+                           GiftRecord("C04","Shell 200 Coupon",200,960),
+                           GiftRecord("D01","Clever Headset ",350,1750),
+                           GiftRecord("D02","HP Optic Mouse",250,1250),
+                           GiftRecord("D03","Stylish Bluetooth Speaker",800,3900)};
+    for (auto gift_record : li) {
+        AddRecord(gift_record);
+    }
+    hasLoadData = true;
+}
+bool isCorrectDate(string date , int *Year , int*Month , int*Day) {
+    string tempstr = {date.c_str()[4] , date.c_str()[5] , date.c_str()[6] , date.c_str()[7]};
+    bool isThisYear = false;
+    if (stoi(tempstr) < today.Year) {
+        *Year = stoi(tempstr);
+    }else if (stoi(tempstr) == today.Year) {
+        *Year = stoi(tempstr);
+        isThisYear = true;
+    }else {
+        return false;
+    }
+    tempstr = {date[2] , date[3]};
+    if (isThisYear) {
+        if (stoi(tempstr) <= today.Month) {
+            *Month = stoi(tempstr);
+        }else {
+            return false;
+        }
+    }else if (stoi(tempstr)<=12) {
+        *Month = stoi(tempstr);
+    }else {
+        return false;
+    }
+    tempstr = {date[0] , date[1]};
+    if (isThisYear) {
+        if (today.Month==*Month){
+            if (stoi(tempstr)<=today.Day) {
+                *Day = stoi(tempstr);
+            }else {
+                return false;
+            }
+        }
+    }
+    if (2 == *Month&&*Year%4==0) {
+        if (stoi(tempstr)<=29) {
+            *Day = stoi(tempstr);
+        }else {
+            return false;
+        }
+    }
+    if (*Month == 1||*Month == 3||*Month ==5 ||*Month == 7||*Month == 8||*Month == 10||*Month == 12) {
+        if (stoi(tempstr)<=31) {
+            *Day = stoi(tempstr);
+        }else {
+            return false;
+        }
+    }else if (*Month == 4||*Month == 6||*Month == 9 ||*Month == 11){
+        if (stoi(tempstr)<=30) {
+            *Day = stoi(tempstr);
+        }else {
+            return false;
+        }
+    }else {
+        if (stoi(tempstr)<=28) {
+            *Day = stoi(tempstr);
+        }else {
+            return false;
+        }
+    }
+    return true;
+}
+int main() {
+    string tempselect;
+    int select = 0;
+    while(select!=5){
+        cout << "Welcome Gift Redemption System\n"
+                "*** Main Menu ***\n"
+                "[1] Load Starting Data\n"
+                "[2] Show Records\n"
+                "[3] Edit Customer\n"
+                "[4] Enter Customer View\n"
+                "[5] Show Transaction History\n"
+                "[6] Credit and Exit\n";
+        cout << "Option (1 - 6) : ";
+        getline(cin , tempselect);
+        if (tempselect.empty()){
+            select = -1;
+        }
+        try {
+            if(!hasLoadData){
+                if(tempselect != "1"){
+                    cout << "You haven't load the data!\n";
+                    continue;
+                }
+            }
+            select = stoi(tempselect);
+            switch (select) {
+                case 1: {
+                    initialsiation();
+                    break;
+                }
+                case 2: {
+
+                    SortCustomerList();
+                    for (auto customer_list : customerList) {
+                        customer_list.toString();
+                    }
+                    SortGiftList();
+                    for (auto giftRecord : giftRecordList) {
+                        giftRecord.toString();
+                    }
+                    break;
+                }
+                case 3: {
+                    string customerID;
+                    cout << "Please input an Customer ID: ";
+                    string next ;
+                    bool passing = true;
+                    getline(cin ,customerID);
+                    if (customerID.empty()){
+                        cout << "No input found!\n";
+                        break;
+                    }
+                    for (int i = 0; i < strlen(customerID.c_str()) ; i++) {
+                        if (customerID.c_str()[i] == ' ') {
+                            cout << "There are space in the CustomerID! Please remove the space and try again! \n";
+                            passing = false;
+                            break;
+                        }
+                    }
+                    if (!passing) {
+                        break;
+                    }
+                    string choice;
+                    if (HasCustomer(customerID)) {
+                        do{
+                            cout << "Are you sure to remove the customerID?(y/n)\n";
+                            getline(cin , choice);
+                            if (choice == "y") {
+                                DeleteCustomer(customerID);
+                            }
+                            if(choice != "y" && choice !="n"){
+                                cout << "Wrong Input , please try again!\n";
+                            }
+                        } while (choice != "y" && choice !="n");
+                        break;
+                    }else{
+                        do {
+                            cout << "No Customer ID found ... Are you sure to add the Customer?(y/n)\n";
+                            getline(cin , choice);
+                            if(choice != "y" && choice !="n"){
+                                cout << "Wrong Input , please try again!\n";
+                            }
+                        }while (choice != "y" && choice !="n");
+                        if(choice == "n"){
+                            break;
+                        }
+                        string tempDate;
+                        Date* date ;
+                        bool CorrectDate;
+                        do {
+                            try{
+                                cout << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
+                                getline(cin , tempDate);
+                                if (tempDate!="today"&&tempDate.size()!=8){
+                                    cout << "The size was wrongly input , please try again!\n";
+                                }else if(tempDate == "today") {
+                                    date = &today;
+                                    break;
+                                }
+                                int year, month , day;
+                                CorrectDate = isCorrectDate(tempDate , &year, &month , &day);
+                                if (!CorrectDate) {
+                                    cout << "The date was wrongly input , please try again!\n";
+                                }else {
+                                    Date tempdate = Date(year , month , day);
+                                    date = &tempdate;
+                                    break;
+                                }
+                            }catch (exception e){
+                            }
+                        }while (true);
+                        int PointBalance;
+                        do{
+                            try{
+                                cout << "Input the Initial points:";
+                                string tempinput;
+                                getline(cin , tempinput);
+                                if(tempinput.empty()){
+                                    throw invalid_argument("");
+                                }
+                                PointBalance = stoi(tempinput);
+                                if (PointBalance < 0) {
+                                    cout << "The Point should not be > 0\n";
+                                }
+                            }catch (invalid_argument e) {
+                                cout << "Wrong Input , Please try again" << endl;
+                                PointBalance = -1;
+                            }
+                        } while (PointBalance < 0);
+                        AddCustomer(Customer(customerID , getAutoRank(*date) , PointBalance));
+                    }
+
+                    break;
+                }
+                case 4:
+                    break;
+                case 5:
+                    break;
+                case 6:
+                    break;
+                default:
+                    cout << "Wrong Input , Please try again" << endl;
+            }
+        }catch (invalid_argument e) {
+            cout << "Wrong Input , Please try again" << endl;
+        }
+
+    }
+    return 0;
+
+}
