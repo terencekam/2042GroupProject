@@ -106,7 +106,7 @@ public:
         this -> PointBalance = PointBalance;
     }
     void toString() {
-        printf("%-15s %-s %-d\n",CustomerID.c_str(), to_string(Ranking).c_str() , PointBalance);
+        printf("%-15s %-s %-d\n",CustomerID.c_str(), RanktoString[Ranking].c_str() , PointBalance);
     }
 };
 
