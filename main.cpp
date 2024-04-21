@@ -6,7 +6,6 @@
 #include <string.h>
 #include <vector>
 #include <climits>
-#include <format>
 
 class Customer;
 using namespace std;
