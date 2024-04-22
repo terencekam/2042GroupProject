@@ -370,12 +370,12 @@ void CustomerView(){
     do {
         // Get customer ID
         try {
-            cout << "***** Customer View Menu *****\n" // Display menu
+            cout << "\033[1;35m***** Customer View Menu *****\n" // Display menu
                     "[1] Earn CC Points\n"
                     "[2] Redeem Gifts\n"
                     "[3] Modify CC Points Balance\n"
                     "[4] Return to Main Menu\n"
-                    "**************************\n"
+                    "**************************\033[0m\n"
                     "Option (1 - 4): ";
             getline(cin, tempinput); // Get user input
             input = stoi(tempinput); // Convert input to integer
@@ -507,14 +507,14 @@ int main() {
     string tempselect;
     int select = 0;
     do{
-        cout << "Welcome Gift Redemption System\n"
+        cout << "\033[1;34mWelcome Gift Redemption System\n"
                 "*** Main Menu ***\n"
                 "[1] Load Starting Data\n"
                 "[2] Show Records\n"
                 "[3] Edit Customer\n"
                 "[4] Enter Customer View\n"
                 "[5] Show Transaction History\n"
-                "[6] Credit and Exit\n";
+                "[6] Credit and Exit\033[0m\n";
         cout << "Option (1 - 6) : ";
         getline(cin , tempselect);
         if (tempselect.empty()){
