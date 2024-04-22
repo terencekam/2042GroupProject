@@ -367,10 +367,7 @@ void CustomerView(){
         cout << "Can't find customer , please try again!\n";
         return;
     }
-
-
     do {
-
         // Get customer ID
         try {
             cout << "***** Customer View Menu *****\n" // Display menu
@@ -497,14 +494,12 @@ void CustomerView(){
                 case 4:
                     break;
                 default:
-                    break;
+                    cout << "Wrong input , please try again!";
             }
         } catch (exception e) {
-
         }
     }while (input!=4);
-
-
+    customer.toString();
 }
 
 // Main function
