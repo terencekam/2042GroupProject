@@ -1,4 +1,5 @@
 // Include necessary libraries
+#define FMT_HEADER_ONLY
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -8,7 +9,7 @@
 #include <vector>
 #include <stdio.h>
 #include <fstream>
-#include <format>
+#include <fmt/core.h>
 
 // Forward declaration of Customer class
 class Customer;
@@ -169,19 +170,19 @@ public:
     }
     void addPointBalance(int amount) {
         PointBalance += amount;
-        logger.info(std::format("Customer with ID= '{0}' added Point = '{1}'" , CustomerID , amount));
+        logger.info(fmt::format("Customer with ID= '{0}' added Point = '{1}'" , CustomerID , amount));
     }
     bool minusPointBalance(int amount){
         if(PointBalance>=amount){
             PointBalance-=amount;
-            logger.info(std::format("Customer with ID= '{0}' deducted Point = '{1}'" , CustomerID , amount));
+            logger.info(fmt::format("Customer with ID= '{0}' deducted Point = '{1}'" , CustomerID , amount));
             return true;
         }
         return false;
     }
     void setPointBalance(int PointBalance) {
         this -> PointBalance = PointBalance;
-        logger.info(std::format("Customer with ID = '{0}' set the Point as '{1}'" , CustomerID , PointBalance));
+        logger.info(fmt::format("Customer with ID = '{0}' set the Point as '{1}'" , CustomerID , PointBalance));
     }
     void toString() {
         printf("%-15s %-s %-d\n",CustomerID.c_str(), RanktoString[Ranking].c_str() , PointBalance);
@@ -240,9 +241,9 @@ bool DeleteCustomer(string CustomerID) {
         for (int i = 0 ; i< customerList.size() ; i++) {
             if(customerList[i].getCustomerID() == CustomerID) {
                 auto c = GetCustomer(CustomerID);
-                cout <<std::format("Deleted Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
+                cout <<fmt::format("Deleted Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
                 customerList.erase(customerList.begin()+i);
-                logger.warn(std::format("Customer with customerID = '{0}' was deleted" , CustomerID));
+                logger.warn(fmt::format("Customer with customerID = '{0}' was deleted" , CustomerID));
             }
         }
         return true;
@@ -256,8 +257,8 @@ bool AddCustomer(Customer c) {
         return false;
     }
     customerList.emplace_back(c);
-    cout <<std::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
-    logger.info(std::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance()));
+    cout <<fmt::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
+    logger.info(fmt::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance()));
     return true;
 }
 
@@ -274,7 +275,7 @@ bool HasRecord(GiftRecord r) {
 // Function to add a record
 void AddRecord(GiftRecord r) {
     if(!HasRecord(r)) {
-        logger.info(std::format("Added new Record: GiftCategory = '{0}' , GiftID = '{1}' , GiftDiscription = '{2}' , Price = '{3}' , PointRequired = {4}" , to_string(r.giftCategory) , r.GiftID , r.GiftDiscription , r.price , r.PointRequired));
+        logger.info(fmt::format("Added new Record: GiftCategory = '{0}' , GiftID = '{1}' , GiftDiscription = '{2}' , Price = '{3}' , PointRequired = {4}" , to_string(r.giftCategory) , r.GiftID , r.GiftDiscription , r.price , r.PointRequired));
         giftRecordList.emplace_back(r);
     }
 }
@@ -629,7 +630,7 @@ int main() {
                     if (HasCustomer(customerID)) {
                         do{
                             auto c = GetCustomer(customerID);
-                            cout << std::format("Customer: CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
+                            cout << fmt::format("Customer: CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
                             cout << "Are you sure to remove the customerID?(y/n)\n";
                             getline(cin , choice);
                             if (choice == "y") {
