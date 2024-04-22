@@ -21,7 +21,6 @@ bool HasCustomer(char CustomerID);
 bool DeleteCustomer(char CustomerID);
 bool AddCustomer(Customer c) ;
 bool hasLoadData = false;
-ofstream Filelog("latest.log");
 // Enum for Rank
 enum Rank {
     G ,S ,B
@@ -35,6 +34,7 @@ map<Rank , string> RanktoString = {
 };
 time_t now = time(0);
 tm *ltm = localtime(&now);
+ofstream Filelog("latest.log");
 class Logger{
 public:
     void warn(string log){
@@ -45,6 +45,15 @@ public:
     }
     void info(string log){
         Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "[INFO ]" << log << endl;
+    }
+    void printLog(){
+        string s;
+        Filelog.close();
+        ifstream getFile("latest.log");
+        while(getline(getFile , s)){
+            cout << s;
+        }
+        Filelog.open("latest.log");
     }
 };
 Logger logger;
@@ -217,6 +226,8 @@ bool DeleteCustomer(string CustomerID) {
     if(HasCustomer(CustomerID)) {
         for (int i = 0 ; i< customerList.size() ; i++) {
             if(customerList[i].getCustomerID() == CustomerID) {
+                auto c = GetCustomer(CustomerID);
+                cout <<format("Deleted Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
                 customerList.erase(customerList.begin()+i);
                 logger.warn(format("Customer with customerID = '{0}' was deleted" , CustomerID));
             }
@@ -232,6 +243,7 @@ bool AddCustomer(Customer c) {
         return false;
     }
     customerList.emplace_back(c);
+    cout <<format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
     logger.info(format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance()));
     return true;
 }
@@ -603,6 +615,8 @@ int main() {
                     string choice;
                     if (HasCustomer(customerID)) {
                         do{
+                            auto c = GetCustomer(customerID);
+                            cout << format("Customer: CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
                             cout << "Are you sure to remove the customerID?(y/n)\n";
                             getline(cin , choice);
                             if (choice == "y") {
@@ -675,6 +689,7 @@ int main() {
                     CustomerView();
                     break;
                 case 5:
+                    logger.printLog();
                     break;
                 case 6:
                 {
