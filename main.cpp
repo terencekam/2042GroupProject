@@ -355,7 +355,7 @@ void CustomerView(){
                                 if (69 > static_cast<int>(*category) && static_cast<int>(*category) > 64) {
                                     sort(giftRecordList.begin(), giftRecordList.end(),
                                          [](GiftRecord a, GiftRecord b) {
-                                             if (a.PointRequired > b.PointRequired) {
+                                             if (a.PointRequired < b.PointRequired) {
                                                  return true;
                                              }
                                              return false;
