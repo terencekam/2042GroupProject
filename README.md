@@ -1,5 +1,6 @@
 Include library:
-`#include <algorithm>
+
+`#include <algorithm> cout << endl;
 #include <chrono>
 #include <iostream>
 #include <list>
