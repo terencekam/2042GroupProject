@@ -359,16 +359,15 @@ void CustomerView(){
     int input;
     string customerID;
     Customer customer;
-    while(true){
-        cout << "Please input CustomerID: ";
-        getline(cin , customerID);
-        if(HasCustomer(customerID)){
-            customer = GetCustomer(customerID);
-            break;
-        }else{
-            cout << "Can't find customer , please try again!\n";
-        }
+    cout << "Please input CustomerID: ";
+    getline(cin , customerID);
+    if(HasCustomer(customerID)){
+        customer = GetCustomer(customerID);
+    }else{
+        cout << "Can't find customer , please try again!\n";
+        return;
     }
+
 
     do {
 
@@ -460,10 +459,10 @@ void CustomerView(){
                                             } else if(temp == "n"){
                                                 break;
                                             }else{
-                                                cout << "Wrong input received!";
+                                                cout << "Wrong input received!\n";
                                             }
                                         }else{
-                                            cout << "No input received!";
+                                            cout << "No input received!\n";
                                         }
                                     }
                                 }else{
@@ -475,14 +474,23 @@ void CustomerView(){
                         }
                         times++;
                         if(times == 3){
-                            cout << "Input error > 3... Exiting";
+                            cout << "Input error > 3... Exiting\n";
                         }
                     } while (times != 3);
                     break;
                 }
-
                 case 3:
-                    break;
+                    while (true){
+                        cout << "Your CC Points : " << customer.getPointBalance() << endl;
+                        cout << "Set a new cc Points: ";
+                        string temp;
+                        getline(cin , temp);
+                        try{
+                        }catch (exception e){
+                            cout << "wrong input , Please try again!";
+                        }
+                        break;
+                    }
                 case 4:
                     break;
                 default:
