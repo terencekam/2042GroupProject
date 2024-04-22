@@ -506,7 +506,7 @@ void CustomerView(){
 int main() {
     string tempselect;
     int select = 0;
-    while(select!=6){
+    do{
         cout << "Welcome Gift Redemption System\n"
                 "*** Main Menu ***\n"
                 "[1] Load Starting Data\n"
@@ -651,7 +651,30 @@ int main() {
                 case 5:
                     break;
                 case 6:
+                {
+                    string confirm;
+                    do{
+                        cout << "Confirm Exit?(y/n)?";
+                        getline(cin ,  confirm);
+                        if(confirm=="y"){
+                            auto k = [](string studentName , string studentID , string tutorGroup){
+                                    printf("%11s %9s %4s",studentName.c_str() , studentID.c_str() , tutorGroup.c_str());
+                                };
+                            k("LUO Jia Wei","23063148A","B03A");
+                            k("Siu Lok","23092746A","B03C");
+                            k("Shih Richard","23082415A","B03B");
+                            k("Ng Ka Ming","23077823A","B03C");
+                            k("Liao Jia Ron","23154894A","B03C");
+                            k("Kam Yiu Hei","23091497A","B03B");
+
+                        } else if(confirm == "n"){
+
+                        } else{
+                            cout << "wrong input please try again";
+                        }
+                    } while (confirm!="y"&&confirm!="n");
                     break;
+                }
                 default:
                     cout << "Wrong Input , Please try again" << endl;
             }
@@ -659,7 +682,7 @@ int main() {
             cout << "Wrong Input , Please try again" << endl;
         }
 
-    }
+    }while(select!=6);
     return 0;
 
 }
