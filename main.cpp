@@ -401,13 +401,14 @@ void CustomerView(){
         int oldPoint = customer.getPointBalance();
         // Get customer ID
         try {
-            cout << "\033[1;35m***** Customer View Menu *****\n" // Display menu
-                    "[1] Earn CC Points\n"
-                    "[2] Redeem Gifts\n"
-                    "[3] Modify CC Points Balance\n"
-                    "[4] Return to Main Menu\n"
-                    "**************************\033[0m\n"
-                    "Option (1 - 4): ";
+            cout << "Action of the Customer ID: \x1B[32m" << customerID << "\033[0m\n"
+                        "\x1B[31m***** Customer View Menu *****\033[0m\n"
+                        "[1] Earn CC Points\n"
+                        "[2] Redeem Gifts\n"
+                        "[3] Modify CC Points Balance\n"
+                        "[4] Return to Main Menu\n"
+                        "\x1B[31m**************************\033[0m\n"
+                        "Option (1 - 4): ";
             getline(cin, tempinput); // Get user input
             input = stoi(tempinput); // Convert input to integer
             switch (input) { // Switch case based on input
@@ -569,6 +570,7 @@ int main() {
             switch (select) {
                 case 1: {
                     initialsiation();
+                    cout << "Data loaded successfully!\n";
                     break;
                 }
                 case 2: {
@@ -641,44 +643,69 @@ int main() {
                         string tempDate;
                         Date* date ;
                         bool CorrectDate;
+                        int round = 3; // to count the times
                         do {
-                            try{
+                          startdate: try{
                                 cout << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
                                 getline(cin , tempDate);
-                                if (tempDate!="today"&&tempDate.size()!=8){
-                                    cout << "The size was wrongly input , please try again!\n";
+                                if (tempDate!="today"&&tempDate.size()!=8){ // check the size
+                                    cout << "The size was wrongly input, please try again!\n";
+                                  round--;
+                                  if (round == 0){ // more than three times incorrect input
+                                    cout << " You have no more chance to type the input, now the program would send you back to the main page.\n";
+                                    cout << "Loading...";
+                                    cout << "\nNow you are back to the main page.\n";
+                                      goto back;
+                                    }
+                                  else{ // show the chances
+                                    cout << "You have " << round << " more chance to input the date!\n";
+                                    goto startdate;
+                                  }
                                 }else if(tempDate == "today") {
                                     date = &today;
                                     break;
                                 }
-                                int year, month , day;
-                                CorrectDate = isCorrectDate(tempDate , &year, &month , &day);
+                            int year, month , day;
+                            CorrectDate = isCorrectDate(tempDate , &year, &month , &day);
                                 if (!CorrectDate) {
-                                    cout << "The date was wrongly input , please try again!\n";
-                                }else {
+                                  cout << "The date was wrongly input , please try again!\n";
+                                  round--;
+                                  if (round == 0){
+                                    cout << " You have no more chance to type the input, now the program would send you back to the main page.\n";
+                                    cout << "Loading...";
+                                    cout << "\nNow you are back to the main page.\n";
+                                      goto back;
+                                    }
+                                  else{
+                                    cout << "You have " << round << " more chance to input the date!\n";
+                                    goto startdate; // back to try statment
+                                  }
+                                }
+                                else {
                                     Date tempdate = Date(year , month , day);
                                     date = &tempdate;
-                                    break;
+                                    round = -1; // break the do-while loop
                                 }
                             }catch (exception e){
                             }
-                        }while (true);
+                        }while (round >= 0); // only allow three times incorrect input
+                        
                         int PointBalance;
                         do{
                             try{
                                 cout << "Input the Initial points:";
                                 string tempinput;
                                 getline(cin , tempinput);
-                                if(tempinput.empty()){
+                                if(tempinput.empty()){ // check null value
                                     throw invalid_argument("");
                                 }
                                 PointBalance = stoi(tempinput);
-                                if (PointBalance < 0) {
+                                if (PointBalance < 0) { // check negative value
                                     cout << "The Point should not be > 0\n";
                                 }
-                            }catch (invalid_argument e) {
+                            }catch (invalid_argument e) { // check other type input
                                 cout << "Wrong Input , Please try again" << endl;
-                                PointBalance = -1;
+                                PointBalance = -1; // to meet do-while condition
                             }
                         } while (PointBalance < 0);
                         AddCustomer(Customer(customerID , getAutoRank(*date) , PointBalance));
