@@ -532,6 +532,7 @@ int main() {
             switch (select) {
                 case 1: {
                     initialsiation();
+                    cout << "Data loaded successfully!\n";
                     break;
                 }
                 case 2: {
@@ -643,7 +644,7 @@ int main() {
                                 else {
                                     Date tempdate = Date(year , month , day);
                                     date = &tempdate;
-                                    
+                                    round = -1; // break the do-while loop
                                 }
                             }catch (exception e){
                             }
