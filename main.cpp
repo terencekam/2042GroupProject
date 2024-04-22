@@ -1,4 +1,3 @@
-// Include necessary libraries
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -9,32 +8,22 @@
 #include <stdio.h>
 #include <climits>
 
-// Forward declaration of Customer class
 class Customer;
-// Forward declaration of GiftRecord class
-class GiftRecord;
-// Define namespace
 using namespace std;
-// Function prototypes
 bool Fo(char , int);
 bool HasCustomer(char CustomerID);
 bool DeleteCustomer(char CustomerID);
 bool AddCustomer(Customer c) ;
 bool hasLoadData = false;
 
-// Enum for Rank
 enum Rank {
     G ,S ,B
 };
-
-// Map to convert Rank to string
 map<Rank , string> RanktoString = {
         {G , "G"},
         {S , "S"},
         {B , "B"}
 };
-
-// Struct for Date
 struct Date{
     Date(int year , int month , int day) {
         Year = year;
@@ -44,16 +33,13 @@ struct Date{
     int Year;
     int Month;
     int Day;
-    // Function to convert Date to string
     string toString() {
         return Year==0?"No Date":"Year: " + std::to_string(Year) + ", Month: " + std::to_string(Month) + ", Day: " + std::to_string(Day);
     }
 };
-// Get current date
 time_t now = time(0);
 tm *ltm = localtime(&now);
 Date today = Date(1900 + ltm->tm_year , 1 + ltm->tm_mon , ltm->tm_mday);
-// Function to get automatic Rank based on Date
 Rank getAutoRank(Date date) {
     int yeardiff;
     yeardiff = today.Year-date.Year;
@@ -97,27 +83,21 @@ Rank getAutoRank(Date date) {
     }
 }
 
-// Enum for GiftCategory
 enum GiftCategory {
     a ,b ,c , d
 };
-
-// Map to convert GiftCategory to string
 map<GiftCategory , string> GiftCategoryToString = {
         {a , "Audio & Video"},
         {b , "Kitchenware"},
         {c , "Coupons"},
         {d , "Computer Accessories"},
 };
-
-// Class for Customer
 class Customer {
 private:
-    string CustomerID = "";
-    Rank Ranking = B;
-    int PointBalance = 0;
+    string CustomerID;
+    Rank Ranking;
+    int PointBalance;
 public:
-    Customer(){};
     Customer(string customerID , Rank rank , int pointBalance) {
         CustomerID = customerID;
         Ranking = rank;
@@ -149,11 +129,8 @@ public:
         printf("%-15s %-s %-d\n",CustomerID.c_str(), RanktoString[Ranking].c_str() , PointBalance);
     }
 };
-
-// Vector to store list of customers
 vector<Customer> customerList;
 
-// Struct for GiftRecord
 struct GiftRecord{
 
     char *GiftID = new char[3];
@@ -173,10 +150,8 @@ struct GiftRecord{
     }
 };
 
-// Vector to store list of gift records
 vector<GiftRecord> giftRecordList ;
 
-// Function to check if a customer exists
 bool HasCustomer(string CustomerID) {
     for (auto customer_list : customerList) {
         if(customer_list.getCustomerID() == CustomerID) {
@@ -186,7 +161,6 @@ bool HasCustomer(string CustomerID) {
     return false;
 }
 
-// Function to get a customer
 Customer GetCustomer(string CustomerID) {
     for (auto customer_list : customerList) {
         if(customer_list.getCustomerID() == CustomerID) {
@@ -196,7 +170,6 @@ Customer GetCustomer(string CustomerID) {
     return {"" , G , -1};
 }
 
-// Function to delete a customer
 bool DeleteCustomer(string CustomerID) {
     if(HasCustomer(CustomerID)) {
         for (int i = 0 ; i< customerList.size() ; i++) {
@@ -209,7 +182,6 @@ bool DeleteCustomer(string CustomerID) {
     return false;
 }
 
-// Function to add a customer
 bool AddCustomer(Customer c) {
     if(HasCustomer(c.getCustomerID())) {
         return false;
@@ -217,8 +189,6 @@ bool AddCustomer(Customer c) {
     customerList.emplace_back(c);
     return true;
 }
-
-// Function to check if a record exists
 bool HasRecord(GiftRecord r) {
     for (auto gift_record_list : giftRecordList) {
         if (r.GiftID == gift_record_list.GiftID) {
@@ -227,15 +197,11 @@ bool HasRecord(GiftRecord r) {
     }
     return false;
 }
-
-// Function to add a record
 void AddRecord(GiftRecord r) {
     if(!HasRecord(r)) {
         giftRecordList.emplace_back(r);
     }
 }
-
-// Function to initialize data
 void initialsiation() {
     list<Customer> l = {Customer("Tommy2015",B,8500),
                         Customer("DavidChan",B,22800),
@@ -270,28 +236,8 @@ void initialsiation() {
     }
     hasLoadData = true;
 }
-
-bool HasGiftRecord(string giftId){
-    for (const auto &item: giftRecordList){
-            if(item.GiftID==giftId){
-                return true;
-            }
-    }
-    return false;
-}
-
-GiftRecord getGiftRecord(string giftId){
-    for (const auto &item: giftRecordList){
-        if(item.GiftID==giftId){
-            return item;
-        }
-    }
-    return {"" , "" , 0 , 0};
-}
-
-// Function to check if a date is correct
 bool isCorrectDate(string date , int *Year , int*Month , int*Day) {
-    string tempstr = {date.c_str()[4] , date.c_str()[5] , date.c_str()[6] , date.c_str()[7]}; // Year
+    string tempstr = {date.c_str()[4] , date.c_str()[5] , date.c_str()[6] , date.c_str()[7]};
     bool isThisYear = false;
     if (stoi(tempstr) < today.Year) {
         *Year = stoi(tempstr);
@@ -351,158 +297,100 @@ bool isCorrectDate(string date , int *Year , int*Month , int*Day) {
     }
     return true;
 }
-
-// Function for Customer View
 void CustomerView(){
 
     string tempinput;
     int input;
     string customerID;
-    Customer customer;
-    cout << "Please input CustomerID: ";
-    getline(cin , customerID);
-    if(HasCustomer(customerID)){
-        customer = GetCustomer(customerID);
-    }else{
-        cout << "Can't find customer , please try again!\n";
-        return;
-    }
     do {
-        // Get customer ID
-        try {
-            cout << "***** Customer View Menu *****\n" // Display menu
-                    "[1] Earn CC Points\n"
-                    "[2] Redeem Gifts\n"
-                    "[3] Modify CC Points Balance\n"
-                    "[4] Return to Main Menu\n"
-                    "**************************\n"
-                    "Option (1 - 4): ";
-            getline(cin, tempinput); // Get user input
-            input = stoi(tempinput); // Convert input to integer
-            switch (input) { // Switch case based on input
-                case 1: {
-                    string tempmoney;
-                    cout << "Input a amount of money";
-                    getline(cin, tempmoney);
-                    float money;
-                    try {
-                        money = stof(tempmoney);
-                        if (money > 0) {
-                            int points = (int) (money / 250);
-                            customer.addPointBalance(points); // Add points to customer
-                            cout << "Points added!";
-                        }
-                    } catch (exception e) {
-                        cout << "Wrong input , PLease try again";
-                    }
-                    break;
-                }
-                case 2: {
-                    int times = 0;
-                    do {
-                        try {
-                            string temp;
-                            cout << "Please input the Category: ";
-                            getline(cin, temp); // Get category
-                            char category[1];
-                            strcpy(category, temp.c_str());
-                            if (69 > static_cast<int>(*category) && static_cast<int>(*category) > 64) {
-                                sort(giftRecordList.begin(), giftRecordList.end(), // Sort gift records
-                                     [](GiftRecord a, GiftRecord b) { // Lambda function to sort gift records
-                                         if (a.PointRequired < b.PointRequired) {
-                                             return true;
-                                         }
-                                         return false;
-                                     }
-                                );
-                                for_each(giftRecordList.begin(), giftRecordList.end(),
-                                         [&category , &customer](GiftRecord j) {
-                                             if ((char)j.giftCategory == (char) *category){
-                                                 printf("%-3s %-5d %-5d%s %s\n",j.GiftID , j.price ,  j.PointRequired , j.PointRequired<=customer.getPointBalance() ? "(enough Points!)": "(not enough Points!)" , j.GiftDiscription);
-                                             }
-                                         });
-                                cout << "Please Select: ";
-                                getline(cin , temp);
-                                if(!temp.empty()){
-                                    if(HasGiftRecord(temp)){
-                                        GiftRecord g = getGiftRecord(temp);
-                                        if(g.PointRequired <= customer.getPointBalance()){
-                                            cout << "You can get the gift freely!\ncontinue?(y/n): ";
-                                        }else{
-                                            printf("You have not enough points, you may pay extra of %.0f to redeem the gift and all the points will be deducted, continue?(y/n) ",
-                                                   [&customer , &g](){
-                                                       switch (customer.getRank()) {
-                                                           case G:
-                                                               return (g.PointRequired-customer.getPointBalance())*0.9*0.2;
-                                                           case S:
-                                                               return (g.PointRequired-customer.getPointBalance())*0.9*0.2;
-                                                           default:
-                                                               return g.PointRequired-customer.getPointBalance()*0.2;
-                                                       }
-                                            }.operator()());
-                                        }
-                                        getline(cin , temp);
-                                        if(!temp.empty()){
-                                            if(temp=="y"){
-                                                if(g.PointRequired <= customer.getPointBalance()){
-                                                    customer.minusPointBalance(g.PointRequired);
-                                                    cout << "redeemed!\n";
-                                                    break;
-                                                }else{
-                                                    customer.setPointBalance(0);
-                                                    cout << "redeemed!\n";
-                                                    break;
-                                                }
-                                            } else if(temp == "n"){
-                                                break;
-                                            }else{
-                                                cout << "Wrong input received!\n";
-                                            }
-                                        }else{
-                                            cout << "No input received!\n";
-                                        }
-                                    }
-                                }else{
-                                    cout << "no input , please try again!\n";
-                                }
-                            }
-                        } catch (exception e) {
 
-                        }
-                        times++;
-                        if(times == 3){
-                            cout << "Input error > 3... Exiting\n";
-                        }
-                    } while (times != 3);
-                    break;
-                }
-                case 3:
-                    while (true){
-                        cout << "Your CC Points : " << customer.getPointBalance() << endl;
-                        cout << "Set a new cc Points: ";
-                        string temp;
-                        getline(cin , temp);
-                        try{
-                            auto points = stoi(temp);
-                            customer.setPointBalance(points);
-                            cout << "operation complete!";
-                        }catch (exception e){
-                            cout << "wrong input , Please try again!";
+        cout << "Please input CustomerID: ";
+        getline(cin , customerID);
+        if(HasCustomer(customerID)) {
+            try {
+                cout << "Action of the Customer ID: \x1B[32m" << customerID << "\033[0m\n"
+                        "\x1B[31m***** Customer View Menu *****\033[0m\n"
+                        "[1] Earn CC Points\n"
+                        "[2] Redeem Gifts\n"
+                        "[3] Modify CC Points Balance\n"
+                        "[4] Return to Main Menu\n"
+                        "\x1B[31m**************************\033[0m\n"
+                        "Option (1 - 4): ";
+                getline(cin, tempinput);
+                input = stoi(tempinput);
+                switch (input) {
+                    case 1: {
+                        string customerID;
+                        cout << "Please input CustomerID: ";
+                        getline(cin, customerID);
+                        if (HasCustomer(customerID)) {
+                            string tempmoney;
+                            cout << "Input a amount of money";
+                            getline(cin, tempmoney);
+                            float money;
+                            try {
+                                money = stof(tempmoney);
+                                if (money > 0) {
+                                    int points = (int) (money / 250);
+                                    GetCustomer(customerID).addPointBalance(points);
+                                    cout << "Points added!";
+                                }
+                            } catch (exception e) {
+                                cout << "Wrong input , PLease try again";
+                            }
+                        } else {
+                            cout << "There are no such customer...\nBack to main menu now...\n";
+                            break;
                         }
                         break;
                     }
-                case 4:
-                    break;
-                default:
-                    cout << "Wrong input , please try again!";
+                    case 2: {
+                        int times = 0;
+                        do {
+                            try {
+                                string temp;
+                                cout << "Please input the Category: ";
+                                getline(cin, temp);
+                                char category[1];
+                                strcpy(category, temp.c_str());
+                                if (69 > static_cast<int>(*category) && static_cast<int>(*category) > 64) {
+                                    sort(giftRecordList.begin(), giftRecordList.end(),
+                                         [](GiftRecord a, GiftRecord b) {
+                                             if (a.PointRequired > b.PointRequired) {
+                                                 return true;
+                                             }
+                                             return false;
+                                         }
+                                    );
+                                    for_each(giftRecordList.begin(), giftRecordList.end(),
+                                             [&category](GiftRecord j) {
+                                                 if ((char)j.giftCategory == (char) *category){
+                                                     j.toString();
+                                                 }
+                                             });
+                                }
+                            } catch (exception e) {
+
+                            }
+                            times++;
+                        } while (times != 3);
+                        break;
+                    }
+
+                    case 3:
+                        break;
+                    case 4:
+                        break;
+                    default:
+                        break;
+                }
+            } catch (exception e) {
+
             }
-        } catch (exception e) {
         }
     }while (input!=4);
-    customer.toString();
 }
 
-// Main function
 int main() {
     string tempselect;
     int select = 0;
@@ -531,6 +419,7 @@ int main() {
             switch (select) {
                 case 1: {
                     initialsiation();
+                    cout << "Data loaded!\n";
                     break;
                 }
                 case 2: {
@@ -601,29 +490,55 @@ int main() {
                         string tempDate;
                         Date* date ;
                         bool CorrectDate;
+                        int round = 2;
                         do {
-                            try{
+                          startdate: try{
                                 cout << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
                                 getline(cin , tempDate);
                                 if (tempDate!="today"&&tempDate.size()!=8){
-                                    cout << "The size was wrongly input , please try again!\n";
+                                    cout << "The size was wrongly input, please try again!\n";
+                                  round--;
+                                  if (round == 0){
+                                    cout << " You have no more chance to type the input, now the program would send you back to the main page.\n";
+                                    cout << "Loading...";
+                                    cout << "\nNow you are back to the main page.\n";
+                                      goto back;
+                                    }
+                                  else{
+                                    cout << "You have " << round << " more chance to input the date!\n";
+                                    goto startdate;
+                                  }
                                 }else if(tempDate == "today") {
                                     date = &today;
                                     break;
                                 }
-                                int year, month , day;
-                                CorrectDate = isCorrectDate(tempDate , &year, &month , &day);
+                            int year, month , day;
+                            CorrectDate = isCorrectDate(tempDate , &year, &month , &day);
                                 if (!CorrectDate) {
-                                    cout << "The date was wrongly input , please try again!\n";
-                                }else {
+                                  cout << "The date was wrongly input , please try again!\n";
+                                  round--;
+                                  if (round == 0){
+                                    cout << " You have no more chance to type the input, now the program would send you back to the main page.\n";
+                                    cout << "Loading...";
+                                    cout << "\nNow you are back to the main page.\n";
+                                      goto back;
+                                    }
+                                  else{
+                                    cout << "You have " << round << " more chance to input the date!\n";
+                                    goto startdate;
+                                  }
+                                }
+                                else {
                                     Date tempdate = Date(year , month , day);
                                     date = &tempdate;
-                                    break;
+                                    
                                 }
                             }catch (exception e){
                             }
-                        }while (true);
+                        }while (round >= 0);
+                      
                         int PointBalance;
+                      
                         do{
                             try{
                                 cout << "Input the Initial points:";
@@ -643,7 +558,7 @@ int main() {
                         } while (PointBalance < 0);
                         AddCustomer(Customer(customerID , getAutoRank(*date) , PointBalance));
                     }
-                    break;
+                  back: break;
                 }
                 case 4:
                     CustomerView();
@@ -651,6 +566,7 @@ int main() {
                 case 5:
                     break;
                 case 6:
+                    cout << "System exits! Thank you for using!\n";
                     break;
                 default:
                     cout << "Wrong Input , Please try again" << endl;
