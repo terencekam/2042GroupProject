@@ -254,13 +254,13 @@ bool HasCustomer(string CustomerID) {
 }
 
 // Function to get a customer
-Customer GetCustomer(string CustomerID) {
+Customer *GetCustomer(string CustomerID) {
     for (auto customer_list: customerList) {
         if (customer_list.getCustomerID() == CustomerID) {
-            return customer_list;
+            return &customer_list;
         }
     }
-    return {"", G, -1};
+    return new Customer("" , G, -1);
 }
 
 // Function to delete a customer
@@ -271,7 +271,7 @@ bool DeleteCustomer(string CustomerID) {
                 auto c = GetCustomer(CustomerID);
                 cout << fmt::format(
                         "Deleted Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'\n",
-                        c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance());
+                        c->getCustomerID(), RanktoString[c->getRank()], c->getPointBalance());
                 customerList.erase(customerList.begin() + i);
                 logger.warn(fmt::format("Customer with customerID = '{0}' was deleted", CustomerID));
             }
@@ -434,7 +434,7 @@ void CustomerView() {
     cout << "Please input CustomerID: ";
     getline(cin, customerID);
     if (HasCustomer(customerID)) {
-        customer = GetCustomer(customerID);
+        customer = *GetCustomer(customerID);
     } else {
         cout << "Can't find customer , please try again!\n";
         return;
@@ -671,7 +671,7 @@ int main() {
                             auto c = GetCustomer(customerID);
                             cout << fmt::format(
                                     "Customer: CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",
-                                    c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance());
+                                    c->getCustomerID(), RanktoString[c->getRank()], c->getPointBalance());
                             cout << "Are you sure to remove the customerID?(y/n)\n";
                             getline(cin, choice);
                             if (choice == "y") {
