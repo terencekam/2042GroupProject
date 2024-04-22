@@ -297,6 +297,9 @@ bool AddCustomer(Customer c) {
     if (HasCustomer(c.getCustomerID())) {
         return false;
     }
+    if(c.getPointBalance()<0){
+        cout << "No Input occur amount<0\n";
+    }
     customerList.emplace_back(c);
     cout << fmt::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'\n",
                         c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance());
