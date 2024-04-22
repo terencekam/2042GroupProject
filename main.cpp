@@ -36,15 +36,27 @@ time_t now = time(0);
 tm *ltm = localtime(&now);
 ofstream Filelog("latest.log");
 class Logger{
+    enum level{
+      w , e , i
+    };
+    map<level , string> levelToString = {
+            {w , "WARN"},
+            {e , "ERROR "},
+            {i , "INFO"}
+    };
+private:
+    void logto(string log , level l){
+        Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << levelToString[l] << log << endl;
+    }
 public:
     void warn(string log){
-        Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "[WARN ]" << log << endl;
+        logto(log , w);
     }
     void error(string log){
-        Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "[ERROR ]" << log << endl;
+        logto(log , e);
     }
     void info(string log){
-        Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "[INFO ]" << log << endl;
+        logto(log , i);
     }
     void printLog(){
         string s;
@@ -156,19 +168,19 @@ public:
     }
     void addPointBalance(int amount) {
         PointBalance += amount;
-        logger.info(format("Customer with ID= '{0}' added Point = '{1}'" , CustomerID , amount));
+        logger.info(std::format("Customer with ID= '{0}' added Point = '{1}'" , CustomerID , amount));
     }
     bool minusPointBalance(int amount){
         if(PointBalance>=amount){
             PointBalance-=amount;
-            logger.info(format("Customer with ID= '{0}' deducted Point = '{1}'" , CustomerID , amount));
+            logger.info(std::format("Customer with ID= '{0}' deducted Point = '{1}'" , CustomerID , amount));
             return true;
         }
         return false;
     }
     void setPointBalance(int PointBalance) {
         this -> PointBalance = PointBalance;
-        logger.info(format("Customer with ID = '{0}' set the Point as '{1}'" , CustomerID , PointBalance));
+        logger.info(std::format("Customer with ID = '{0}' set the Point as '{1}'" , CustomerID , PointBalance));
     }
     void toString() {
         printf("%-15s %-s %-d\n",CustomerID.c_str(), RanktoString[Ranking].c_str() , PointBalance);
@@ -227,9 +239,9 @@ bool DeleteCustomer(string CustomerID) {
         for (int i = 0 ; i< customerList.size() ; i++) {
             if(customerList[i].getCustomerID() == CustomerID) {
                 auto c = GetCustomer(CustomerID);
-                cout <<format("Deleted Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
+                cout <<std::format("Deleted Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
                 customerList.erase(customerList.begin()+i);
-                logger.warn(format("Customer with customerID = '{0}' was deleted" , CustomerID));
+                logger.warn(std::format("Customer with customerID = '{0}' was deleted" , CustomerID));
             }
         }
         return true;
@@ -243,8 +255,8 @@ bool AddCustomer(Customer c) {
         return false;
     }
     customerList.emplace_back(c);
-    cout <<format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
-    logger.info(format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance()));
+    cout <<std::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
+    logger.info(std::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance()));
     return true;
 }
 
@@ -261,7 +273,7 @@ bool HasRecord(GiftRecord r) {
 // Function to add a record
 void AddRecord(GiftRecord r) {
     if(!HasRecord(r)) {
-        logger.info(format("Added new Record: GiftCategory = '{0}' , GiftID = '{1}' , GiftDiscription = '{2}' , Price = '{3}' , PointRequired = {4}" , to_string(r.giftCategory) , r.GiftID , r.GiftDiscription , r.price , r.PointRequired));
+        logger.info(std::format("Added new Record: GiftCategory = '{0}' , GiftID = '{1}' , GiftDiscription = '{2}' , Price = '{3}' , PointRequired = {4}" , to_string(r.giftCategory) , r.GiftID , r.GiftDiscription , r.price , r.PointRequired));
         giftRecordList.emplace_back(r);
     }
 }
@@ -616,7 +628,7 @@ int main() {
                     if (HasCustomer(customerID)) {
                         do{
                             auto c = GetCustomer(customerID);
-                            cout << format("Customer: CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
+                            cout << std::format("Customer: CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
                             cout << "Are you sure to remove the customerID?(y/n)\n";
                             getline(cin , choice);
                             if (choice == "y") {
@@ -709,7 +721,7 @@ int main() {
                             k("Kam Yiu Hei","23091497A","B03B");
 
                         } else if(confirm == "n"){
-
+                            select = -1;
                         } else{
                             cout << "wrong input please try again";
                         }
