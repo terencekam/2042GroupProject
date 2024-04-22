@@ -5,6 +5,7 @@
 #include <map>
 #include <string.h>
 #include <vector>
+#include <stdio.h>
 #include <climits>
 
 class Customer;
@@ -82,6 +83,15 @@ Rank getAutoRank(Date date) {
     }
 }
 
+enum GiftCategory {
+    a ,b ,c , d
+};
+map<GiftCategory , string> GiftCategoryToString = {
+        {a , "Audio & Video"},
+        {b , "Kitchenware"},
+        {c , "Coupons"},
+        {d , "Computer Accessories"},
+};
 class Customer {
 private:
     string CustomerID;
@@ -102,6 +112,16 @@ public:
     int getPointBalance() {
         return PointBalance;
     }
+    void addPointBalance(int amount) {
+        PointBalance += amount;
+    }
+    bool minusPointBalance(int amount){
+        if(PointBalance>=amount){
+            PointBalance-=amount;
+            return true;
+        }
+        return false;
+    }
     void setPointBalance(int PointBalance) {
         this -> PointBalance = PointBalance;
     }
@@ -109,19 +129,10 @@ public:
         printf("%-15s %-s %-d\n",CustomerID.c_str(), RanktoString[Ranking].c_str() , PointBalance);
     }
 };
-
 vector<Customer> customerList;
 
 struct GiftRecord{
-    enum GiftCategory {
-        A ,B ,C , D
-    };
-    map<GiftCategory , string> RanktoString = {
-            {A , "Audio & Video"},
-            {B , "Kitchenware"},
-            {C , "Coupons"},
-            {D , "Computer Accessories"},
-    };
+
     char *GiftID = new char[3];
     char *GiftDiscription = new char[100];
     int price{};
@@ -190,24 +201,6 @@ void AddRecord(GiftRecord r) {
     if(!HasRecord(r)) {
         giftRecordList.emplace_back(r);
     }
-}
-bool GiftComparer(const  GiftRecord &a , const GiftRecord &b) {
-    if (tolower(*a.GiftID) > tolower(*b.GiftID)) {
-        return false;
-    }
-    return true;
-}
-void SortGiftList() {
-    sort(giftRecordList.begin() , giftRecordList.end() , GiftComparer);
-}
-bool CustomerComparer(Customer a , Customer b) {
-    if (tolower(*a.getCustomerID().c_str()) > tolower(*b.getCustomerID().c_str())) {
-        return false;
-    }
-    return true;
-}
-void SortCustomerList() {
-    sort(customerList.begin() , customerList.end() , CustomerComparer);
 }
 void initialsiation() {
     list<Customer> l = {Customer("Tommy2015",B,8500),
@@ -304,6 +297,100 @@ bool isCorrectDate(string date , int *Year , int*Month , int*Day) {
     }
     return true;
 }
+void CustomerView(){
+
+    string tempinput;
+    int input;
+    string customerID;
+    do {
+
+        cout << "Please input CustomerID: ";
+        getline(cin , customerID);
+        if(HasCustomer(customerID)) {
+            try {
+                cout << "***** Customer View Menu *****\n"
+                        "[1] Earn CC Points\n"
+                        "[2] Redeem Gifts\n"
+                        "[3] Modify CC Points Balance\n"
+                        "[4] Return to Main Menu\n"
+                        "**************************\n"
+                        "Option (1 - 4): ";
+                getline(cin, tempinput);
+                input = stoi(tempinput);
+                switch (input) {
+                    case 1: {
+                        string customerID;
+                        cout << "Please input CustomerID: ";
+                        getline(cin, customerID);
+                        if (HasCustomer(customerID)) {
+                            string tempmoney;
+                            cout << "Input a amount of money";
+                            getline(cin, tempmoney);
+                            float money;
+                            try {
+                                money = stof(tempmoney);
+                                if (money > 0) {
+                                    int points = (int) (money / 250);
+                                    GetCustomer(customerID).addPointBalance(points);
+                                    cout << "Points added!";
+                                }
+                            } catch (exception e) {
+                                cout << "Wrong input , PLease try again";
+                            }
+                        } else {
+                            cout << "There are no such customer...\nBack to main menu now...\n";
+                            break;
+                        }
+                        break;
+                    }
+                    case 2: {
+                        int times = 0;
+                        do {
+                            try {
+                                string temp;
+                                cout << "Please input the Category: ";
+                                getline(cin, temp);
+                                char category[1];
+                                strcpy(category, temp.c_str());
+                                if (69 > static_cast<int>(*category) && static_cast<int>(*category) > 64) {
+                                    sort(giftRecordList.begin(), giftRecordList.end(),
+                                         [](GiftRecord a, GiftRecord b) {
+                                             if (a.PointRequired > b.PointRequired) {
+                                                 return true;
+                                             }
+                                             return false;
+                                         }
+                                    );
+                                    for_each(giftRecordList.begin(), giftRecordList.end(),
+                                             [&category](GiftRecord j) {
+                                                 if ((char)j.giftCategory == (char) *category){
+                                                     j.toString();
+                                                 }
+                                             });
+                                }
+                            } catch (exception e) {
+
+                            }
+                            times++;
+                        } while (times != 3);
+                        break;
+                    }
+
+                    case 3:
+                        break;
+                    case 4:
+                        break;
+                    default:
+                        break;
+                }
+            } catch (exception e) {
+
+            }
+        }
+    }while (input!=4);
+
+
+}
 int main() {
     string tempselect;
     int select = 0;
@@ -335,12 +422,21 @@ int main() {
                     break;
                 }
                 case 2: {
-
-                    SortCustomerList();
+                    sort(giftRecordList.begin() , giftRecordList.end() , []( GiftRecord a , GiftRecord b){
+                        if (tolower(*a.GiftID) > tolower(*b.GiftID)) {
+                            return false;
+                        }
+                        return true;
+                    });
+                    sort(customerList.begin() , customerList.end() , [](Customer a , Customer b){
+                        if (tolower(*a.getCustomerID().c_str()) > tolower(*b.getCustomerID().c_str())) {
+                            return false;
+                        }
+                        return true;
+                    });
                     for (auto customer_list : customerList) {
                         customer_list.toString();
                     }
-                    SortGiftList();
                     for (auto giftRecord : giftRecordList) {
                         giftRecord.toString();
                     }
@@ -438,6 +534,7 @@ int main() {
                     break;
                 }
                 case 4:
+                    CustomerView();
                     break;
                 case 5:
                     break;
