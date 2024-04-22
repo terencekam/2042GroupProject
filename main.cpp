@@ -1,3 +1,4 @@
+// Include necessary libraries
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -8,22 +9,32 @@
 #include <stdio.h>
 #include <climits>
 
+// Forward declaration of Customer class
 class Customer;
+// Forward declaration of GiftRecord class
+class GiftRecord;
+// Define namespace
 using namespace std;
+// Function prototypes
 bool Fo(char , int);
 bool HasCustomer(char CustomerID);
 bool DeleteCustomer(char CustomerID);
 bool AddCustomer(Customer c) ;
 bool hasLoadData = false;
 
+// Enum for Rank
 enum Rank {
     G ,S ,B
 };
+
+// Map to convert Rank to string
 map<Rank , string> RanktoString = {
         {G , "G"},
         {S , "S"},
         {B , "B"}
 };
+
+// Struct for Date
 struct Date{
     Date(int year , int month , int day) {
         Year = year;
@@ -33,13 +44,16 @@ struct Date{
     int Year;
     int Month;
     int Day;
+    // Function to convert Date to string
     string toString() {
         return Year==0?"No Date":"Year: " + std::to_string(Year) + ", Month: " + std::to_string(Month) + ", Day: " + std::to_string(Day);
     }
 };
+// Get current date
 time_t now = time(0);
 tm *ltm = localtime(&now);
 Date today = Date(1900 + ltm->tm_year , 1 + ltm->tm_mon , ltm->tm_mday);
+// Function to get automatic Rank based on Date
 Rank getAutoRank(Date date) {
     int yeardiff;
     yeardiff = today.Year-date.Year;
@@ -83,15 +97,20 @@ Rank getAutoRank(Date date) {
     }
 }
 
+// Enum for GiftCategory
 enum GiftCategory {
     a ,b ,c , d
 };
+
+// Map to convert GiftCategory to string
 map<GiftCategory , string> GiftCategoryToString = {
         {a , "Audio & Video"},
         {b , "Kitchenware"},
         {c , "Coupons"},
         {d , "Computer Accessories"},
 };
+
+// Class for Customer
 class Customer {
 private:
     string CustomerID;
@@ -129,8 +148,11 @@ public:
         printf("%-15s %-s %-d\n",CustomerID.c_str(), RanktoString[Ranking].c_str() , PointBalance);
     }
 };
+
+// Vector to store list of customers
 vector<Customer> customerList;
 
+// Struct for GiftRecord
 struct GiftRecord{
 
     char *GiftID = new char[3];
@@ -150,8 +172,10 @@ struct GiftRecord{
     }
 };
 
+// Vector to store list of gift records
 vector<GiftRecord> giftRecordList ;
 
+// Function to check if a customer exists
 bool HasCustomer(string CustomerID) {
     for (auto customer_list : customerList) {
         if(customer_list.getCustomerID() == CustomerID) {
@@ -161,6 +185,7 @@ bool HasCustomer(string CustomerID) {
     return false;
 }
 
+// Function to get a customer
 Customer GetCustomer(string CustomerID) {
     for (auto customer_list : customerList) {
         if(customer_list.getCustomerID() == CustomerID) {
@@ -170,6 +195,7 @@ Customer GetCustomer(string CustomerID) {
     return {"" , G , -1};
 }
 
+// Function to delete a customer
 bool DeleteCustomer(string CustomerID) {
     if(HasCustomer(CustomerID)) {
         for (int i = 0 ; i< customerList.size() ; i++) {
@@ -182,6 +208,7 @@ bool DeleteCustomer(string CustomerID) {
     return false;
 }
 
+// Function to add a customer
 bool AddCustomer(Customer c) {
     if(HasCustomer(c.getCustomerID())) {
         return false;
@@ -189,6 +216,8 @@ bool AddCustomer(Customer c) {
     customerList.emplace_back(c);
     return true;
 }
+
+// Function to check if a record exists
 bool HasRecord(GiftRecord r) {
     for (auto gift_record_list : giftRecordList) {
         if (r.GiftID == gift_record_list.GiftID) {
@@ -197,11 +226,15 @@ bool HasRecord(GiftRecord r) {
     }
     return false;
 }
+
+// Function to add a record
 void AddRecord(GiftRecord r) {
     if(!HasRecord(r)) {
         giftRecordList.emplace_back(r);
     }
 }
+
+// Function to initialize data
 void initialsiation() {
     list<Customer> l = {Customer("Tommy2015",B,8500),
                         Customer("DavidChan",B,22800),
@@ -236,8 +269,10 @@ void initialsiation() {
     }
     hasLoadData = true;
 }
+
+// Function to check if a date is correct
 bool isCorrectDate(string date , int *Year , int*Month , int*Day) {
-    string tempstr = {date.c_str()[4] , date.c_str()[5] , date.c_str()[6] , date.c_str()[7]};
+    string tempstr = {date.c_str()[4] , date.c_str()[5] , date.c_str()[6] , date.c_str()[7]}; // Year
     bool isThisYear = false;
     if (stoi(tempstr) < today.Year) {
         *Year = stoi(tempstr);
@@ -297,6 +332,8 @@ bool isCorrectDate(string date , int *Year , int*Month , int*Day) {
     }
     return true;
 }
+
+// Function for Customer View
 void CustomerView(){
 
     string tempinput;
@@ -305,24 +342,24 @@ void CustomerView(){
     do {
 
         cout << "Please input CustomerID: ";
-        getline(cin , customerID);
-        if(HasCustomer(customerID)) {
+        getline(cin , customerID); // Get customer ID
+        if(HasCustomer(customerID)) { // Check if customer exists
             try {
-                cout << "***** Customer View Menu *****\n"
+                cout << "***** Customer View Menu *****\n" // Display menu
                         "[1] Earn CC Points\n"
                         "[2] Redeem Gifts\n"
                         "[3] Modify CC Points Balance\n"
                         "[4] Return to Main Menu\n"
                         "**************************\n"
                         "Option (1 - 4): ";
-                getline(cin, tempinput);
-                input = stoi(tempinput);
-                switch (input) {
+                getline(cin, tempinput); // Get user input
+                input = stoi(tempinput); // Convert input to integer
+                switch (input) { // Switch case based on input
                     case 1: {
                         string customerID;
                         cout << "Please input CustomerID: ";
                         getline(cin, customerID);
-                        if (HasCustomer(customerID)) {
+                        if (HasCustomer(customerID)) { // Check if customer exists
                             string tempmoney;
                             cout << "Input a amount of money";
                             getline(cin, tempmoney);
@@ -331,7 +368,7 @@ void CustomerView(){
                                 money = stof(tempmoney);
                                 if (money > 0) {
                                     int points = (int) (money / 250);
-                                    GetCustomer(customerID).addPointBalance(points);
+                                    GetCustomer(customerID).addPointBalance(points); // Add points to customer
                                     cout << "Points added!";
                                 }
                             } catch (exception e) {
@@ -349,7 +386,7 @@ void CustomerView(){
                             try {
                                 string temp;
                                 cout << "Please input the Category: ";
-                                getline(cin, temp);
+                                getline(cin, temp); // Get category
                                 char category[1];
                                 strcpy(category, temp.c_str());
                                 if (69 > static_cast<int>(*category) && static_cast<int>(*category) > 64) {
@@ -391,6 +428,8 @@ void CustomerView(){
 
 
 }
+
+// Main function
 int main() {
     string tempselect;
     int select = 0;
