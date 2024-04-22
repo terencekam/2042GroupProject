@@ -77,7 +77,7 @@ public:
         Filelog.close();
         ifstream getFile("latest.log");
         while (getline(getFile, s)) {
-            cout << s;
+            cout << s << endl;
         }
         Filelog.open("latest.log");
     }
