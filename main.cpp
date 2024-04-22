@@ -443,7 +443,9 @@ void CustomerView() {
         int oldPoint = customer.getPointBalance();
         // Get customer ID
         try {
-            cout << "\033[1;35m***** Customer View Menu *****\n" // Display menu
+            cout << "\033[1;35mAction for CustomerID: "
+            << customer.getCustomerID() <<
+                    "***** Customer View Menu *****\n" // Display menu
                     "[1] Earn CC Points\n"
                     "[2] Redeem Gifts\n"
                     "[3] Modify CC Points Balance\n"
