@@ -490,7 +490,7 @@ int main() {
                         string tempDate;
                         Date* date ;
                         bool CorrectDate;
-                        int round = 2;
+                        int round = 3;
                         do {
                           startdate: try{
                                 cout << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
@@ -535,7 +535,7 @@ int main() {
                                 }
                             }catch (exception e){
                             }
-                        }while (round >= 0);
+                        }while (round > 0);
                       
                         int PointBalance;
                       
