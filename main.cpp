@@ -639,9 +639,11 @@ int main() {
                         }
                         return true;
                     });
+                    printf("%-15s %-6s %-s\n", "Customer ID", "Rank", "Point Balance");
                     for (auto customer_list: customerList) {
                         customer_list.toString();
                     }
+                    printf("%-5s %-7s %-9s %s\n", "GiftID", "Price(HKD)", "Points Required", "Gift Description");
                     for (auto giftRecord: giftRecordList) {
                         giftRecord.toString();
                     }
