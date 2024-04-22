@@ -422,7 +422,7 @@ void CustomerView(){
                                              }
                                          });
                                 cout << "Please Select: ";
-                                getline(cin , temp);
+                                getline(cin , temp);//
                                 if(!temp.empty()){
                                     if(HasGiftRecord(temp)){
                                         GiftRecord g = getGiftRecord(temp);
