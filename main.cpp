@@ -486,6 +486,9 @@ void CustomerView(){
                         string temp;
                         getline(cin , temp);
                         try{
+                            auto points = stoi(temp);
+                            customer.setPointBalance(points);
+                            cout << "operation complete!";
                         }catch (exception e){
                             cout << "wrong input , Please try again!";
                         }
