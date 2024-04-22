@@ -9,7 +9,7 @@
 #include <vector>
 #include <stdio.h>
 #include <fstream>
-#include <fmt/core.h>
+#include </home/runner/"YOUR_PROJECT_NAME"/fmt/core.h>
 
 // Forward declaration of Customer class
 class Customer;
@@ -39,7 +39,7 @@ tm *ltm = localtime(&now);
 ofstream Filelog("latest.log");
 class Logger{
     enum level{
-      w , e , i
+        w , e , i
     };
     map<level , string> levelToString = {
             {w , "WARN"},
@@ -318,9 +318,9 @@ void initialsiation() {
 
 bool HasGiftRecord(string giftId){
     for (const auto &item: giftRecordList){
-            if(item.GiftID==giftId){
-                return true;
-            }
+        if(item.GiftID==giftId){
+            return true;
+        }
     }
     return false;
 }
@@ -484,7 +484,7 @@ void CustomerView(){
                                                            default:
                                                                return g.PointRequired-customer.getPointBalance()*0.2;
                                                        }
-                                            }.operator()());
+                                                   }.operator()());
                                         }
                                         getline(cin , temp);
                                         if(!temp.empty()){
@@ -713,8 +713,8 @@ int main() {
                         getline(cin ,  confirm);
                         if(confirm=="y"){
                             auto k = [](string studentName , string studentID , string tutorGroup){
-                                    printf("%11s %9s %4s",studentName.c_str() , studentID.c_str() , tutorGroup.c_str());
-                                };
+                                printf("%11s %9s %4s",studentName.c_str() , studentID.c_str() , tutorGroup.c_str());
+                            };
                             k("LUO Jia Wei","23063148A","B03A");
                             k("Siu Lok","23092746A","B03C");
                             k("Shih Richard","23082415A","B03B");
