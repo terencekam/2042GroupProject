@@ -477,7 +477,7 @@ void CustomerView() {
                             string temp;
                             cout << "Please input the Category: ";
                             getline(cin, temp); // Get category
-                            char category[1];
+                            char category[10];
                             strcpy(category, temp.c_str());
                             if (69 > static_cast<int>(*category) && static_cast<int>(*category) > 64) {
                                 sort(giftRecordList.begin(), giftRecordList.end(), // Sort gift records
