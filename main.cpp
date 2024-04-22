@@ -9,7 +9,7 @@
 #include <vector>
 #include <stdio.h>
 #include <fstream>
-#include </home/runner/YOUR_PROJECT_NAME/fmt/core.h>
+#include <fmt/core.h>
 
 // Forward declaration of Customer class
 class Customer;
@@ -48,7 +48,7 @@ class Logger{
     };
 private:
     void logto(string log , level l){
-        Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << levelToString[l] << log << endl;
+        Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << levelToString[l] << log << "\n";
     }
 public:
     void warn(string log){
@@ -241,7 +241,7 @@ bool DeleteCustomer(string CustomerID) {
         for (int i = 0 ; i< customerList.size() ; i++) {
             if(customerList[i].getCustomerID() == CustomerID) {
                 auto c = GetCustomer(CustomerID);
-                cout <<fmt::format("Deleted Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
+                cout <<fmt::format("Deleted Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'\n",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
                 customerList.erase(customerList.begin()+i);
                 logger.warn(fmt::format("Customer with customerID = '{0}' was deleted" , CustomerID));
             }
@@ -257,7 +257,7 @@ bool AddCustomer(Customer c) {
         return false;
     }
     customerList.emplace_back(c);
-    cout <<fmt::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
+    cout << fmt::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'\n",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance());
     logger.info(fmt::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance()));
     return true;
 }
