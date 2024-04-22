@@ -7,7 +7,7 @@
 #include <string.h>
 #include <vector>
 #include <stdio.h>
-#include <climits>
+#include <fstream>
 
 // Forward declaration of Customer class
 class Customer;
@@ -21,7 +21,7 @@ bool HasCustomer(char CustomerID);
 bool DeleteCustomer(char CustomerID);
 bool AddCustomer(Customer c) ;
 bool hasLoadData = false;
-
+ofstream Filelog("latest.log");
 // Enum for Rank
 enum Rank {
     G ,S ,B
@@ -33,7 +33,21 @@ map<Rank , string> RanktoString = {
         {S , "S"},
         {B , "B"}
 };
-
+time_t now = time(0);
+tm *ltm = localtime(&now);
+class Logger{
+public:
+    void warn(string log){
+        Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "[WARN ]" << log << endl;
+    }
+    void error(string log){
+        Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "[ERROR ]" << log << endl;
+    }
+    void info(string log){
+        Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "[INFO ]" << log << endl;
+    }
+};
+Logger logger;
 // Struct for Date
 struct Date{
     Date(int year , int month , int day) {
@@ -50,8 +64,7 @@ struct Date{
     }
 };
 // Get current date
-time_t now = time(0);
-tm *ltm = localtime(&now);
+
 Date today = Date(1900 + ltm->tm_year , 1 + ltm->tm_mon , ltm->tm_mday);
 // Function to get automatic Rank based on Date
 Rank getAutoRank(Date date) {
@@ -134,16 +147,19 @@ public:
     }
     void addPointBalance(int amount) {
         PointBalance += amount;
+        logger.info(format("Customer with ID= '{0}' added Point = '{1}'" , CustomerID , amount));
     }
     bool minusPointBalance(int amount){
         if(PointBalance>=amount){
             PointBalance-=amount;
+            logger.info(format("Customer with ID= '{0}' deducted Point = '{1}'" , CustomerID , amount));
             return true;
         }
         return false;
     }
     void setPointBalance(int PointBalance) {
         this -> PointBalance = PointBalance;
+        logger.info(format("Customer with ID = '{0}' set the Point as '{1}'" , CustomerID , PointBalance));
     }
     void toString() {
         printf("%-15s %-s %-d\n",CustomerID.c_str(), RanktoString[Ranking].c_str() , PointBalance);
@@ -202,6 +218,7 @@ bool DeleteCustomer(string CustomerID) {
         for (int i = 0 ; i< customerList.size() ; i++) {
             if(customerList[i].getCustomerID() == CustomerID) {
                 customerList.erase(customerList.begin()+i);
+                logger.warn(format("Customer with customerID = '{0}' was deleted" , CustomerID));
             }
         }
         return true;
@@ -215,6 +232,7 @@ bool AddCustomer(Customer c) {
         return false;
     }
     customerList.emplace_back(c);
+    logger.info(format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",c.getCustomerID() , RanktoString[c.getRank()] , c.getPointBalance()));
     return true;
 }
 
@@ -231,6 +249,7 @@ bool HasRecord(GiftRecord r) {
 // Function to add a record
 void AddRecord(GiftRecord r) {
     if(!HasRecord(r)) {
+        logger.info(format("Added new Record: GiftCategory = '{0}' , GiftID = '{1}' , GiftDiscription = '{2}' , Price = '{3}' , PointRequired = {4}" , to_string(r.giftCategory) , r.GiftID , r.GiftDiscription , r.price , r.PointRequired));
         giftRecordList.emplace_back(r);
     }
 }
@@ -354,7 +373,6 @@ bool isCorrectDate(string date , int *Year , int*Month , int*Day) {
 
 // Function for Customer View
 void CustomerView(){
-
     string tempinput;
     int input;
     string customerID;
@@ -368,6 +386,7 @@ void CustomerView(){
         return;
     }
     do {
+        int oldPoint = customer.getPointBalance();
         // Get customer ID
         try {
             cout << "\033[1;35m***** Customer View Menu *****\n" // Display menu
@@ -497,6 +516,13 @@ void CustomerView(){
                     cout << "Wrong input , please try again!";
             }
         } catch (exception e) {
+        }
+        if(customer.getPointBalance() > oldPoint){
+            printf("Customer with ID: %s added Point of : %i (Old Point: %i , New Point: %i) ...Full logs on latest.log or view it on transaction\n", customer.getCustomerID().c_str() , customer.getPointBalance() - oldPoint , oldPoint , customer.getPointBalance());
+        }else if(customer.getPointBalance() < oldPoint){
+            printf("Customer with ID: %s reduced Point of : %i (Old Point: %i , New Point: %i) ...Full logs on latest.log or view it on transaction\n", customer.getCustomerID().c_str() , oldPoint - customer.getPointBalance() , oldPoint , customer.getPointBalance());
+        }else{
+            printf("Customer with ID: %s has Point: %i ...Full logs on latest.log or view it on transaction\n", customer.getCustomerID().c_str() , customer.getPointBalance());
         }
     }while (input!=4);
     customer.toString();
@@ -684,5 +710,6 @@ int main() {
 
     }while(select!=6);
     return 0;
+
 
 }
