@@ -370,15 +370,14 @@ void CustomerView(){
     do {
         // Get customer ID
         try {
-            cout << "Welcome Gift Redemption System\n"
-                "*** Main Menu ***\n"
-                "[1] Load Starting Data\n"
-                "[2] Show Records\n"
-                "[3] Edit Customer\n"
-                "[4] Enter Customer View\n"
-                "[5] Show Transaction History\n"
-                "[6] Credit and Exit\n";
-            cout << "Option (1 - 6) : ";
+            cout << "Action of the Customer ID: \x1B[32m" << customerID << "\033[0m\n"
+                        "\x1B[31m***** Customer View Menu *****\033[0m\n"
+                        "[1] Earn CC Points\n"
+                        "[2] Redeem Gifts\n"
+                        "[3] Modify CC Points Balance\n"
+                        "[4] Return to Main Menu\n"
+                        "\x1B[31m**************************\033[0m\n"
+                        "Option (1 - 4): ";
             getline(cin, tempinput); // Get user input
             input = stoi(tempinput); // Convert input to integer
             switch (input) { // Switch case based on input
