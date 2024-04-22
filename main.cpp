@@ -192,11 +192,19 @@ public:
     }
 
     void addPointBalance(int amount) {
+        if(amount<0){
+            cout << "No Input occur amount<0\n";
+            return;
+        }
         PointBalance += amount;
         logger.info(fmt::format("Customer with ID= '{0}' added Point = '{1}'", CustomerID, amount));
     }
 
     bool minusPointBalance(int amount) {
+        if(amount<0){
+            cout << "No Input occur amount<0\n";
+            return false;
+        }
         if (PointBalance >= amount) {
             PointBalance -= amount;
             logger.info(fmt::format("Customer with ID= '{0}' deducted Point = '{1}'", CustomerID, amount));
@@ -206,6 +214,9 @@ public:
     }
 
     void setPointBalance(int PointBalance) {
+        if(PointBalance<0){
+            cout << "No Input occur amount<0\n";
+        }
         this->PointBalance = PointBalance;
         logger.info(fmt::format("Customer with ID = '{0}' set the Point as '{1}'", CustomerID, PointBalance));
     }
