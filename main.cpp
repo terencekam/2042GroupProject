@@ -718,6 +718,10 @@ int main() {
                         } while (choice != "y" && choice != "n");
                         break;
                     } else {
+                        if(customerID.size()>50){
+                            cout << "Error ... CustomerID > 50\n";
+                            break;
+                        }
                         do {
                             cout << "No Customer ID found ... Are you sure to add the Customer?(y/n)\n";
                             getline(cin, choice);
@@ -733,8 +737,7 @@ int main() {
                         bool CorrectDate;
                         do {
                             try {
-                                cout
-                                        << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
+                                cout << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
                                 getline(cin, tempDate);
                                 if (tempDate != "today" && tempDate.size() != 8) {
                                     cout << "The size was wrongly input , please try again!\n";
