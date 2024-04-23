@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <fmt/core.h>
+//#include </home/runner/C20-Template-1/fmt/core.h>
 
 // Forward declaration of Customer class
 class Customer;
@@ -265,13 +266,13 @@ bool HasCustomer(string CustomerID) {
 }
 
 // Function to get a customer
-Customer *GetCustomer(string CustomerID) {
+Customer GetCustomer(string CustomerID) {
     for (auto customer_list: customerList) {
         if (customer_list.getCustomerID() == CustomerID) {
-            return &customer_list;
+            return customer_list;
         }
     }
-    return new Customer("" , G, -1);
+    return {"" , G, -1};
 }
 
 // Function to delete a customer
@@ -282,7 +283,7 @@ bool DeleteCustomer(string CustomerID) {
                 auto c = GetCustomer(CustomerID);
                 cout << fmt::format(
                         "Deleted Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'\n",
-                        c->getCustomerID(), RanktoString[c->getRank()], c->getPointBalance());
+                        c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance());
                 customerList.erase(customerList.begin() + i);
                 logger.warn(fmt::format("Customer with customerID = '{0}' was deleted", CustomerID));
             }
@@ -316,6 +317,13 @@ bool HasRecord(GiftRecord r) {
         }
     }
     return false;
+}
+
+void ModifyCustomer(Customer c) {
+    customerList.erase( remove_if(customerList.begin(), customerList.end(),[&c](Customer o){
+        return c.getCustomerID() == o.getCustomerID();
+    }), customerList.end());
+    customerList.emplace_back(c);
 }
 
 // Function to add a record
@@ -448,7 +456,7 @@ void CustomerView() {
     cout << "Please input CustomerID: ";
     getline(cin, customerID);
     if (HasCustomer(customerID)) {
-        customer = *GetCustomer(customerID);
+        customer = GetCustomer(customerID);
     } else {
         cout << "Can't find customer , please try again!\n";
         return;
@@ -459,7 +467,7 @@ void CustomerView() {
         try {
             cout << "\033[1;35mAction for CustomerID: "
             << customer.getCustomerID() <<
-                    "***** Customer View Menu *****\n" // Display menu
+                    "\n***** Customer View Menu *****\n" // Display menu
                     "[1] Earn CC Points\n"
                     "[2] Redeem Gifts\n"
                     "[3] Modify CC Points Balance\n"
@@ -480,6 +488,9 @@ void CustomerView() {
                             int points = (int) (money / 250);
                             customer.addPointBalance(points); // Add points to customer
                             cout << "Points added!";
+                        }else{
+                            cout << "Wrong Input , Please try again, amount < 0";
+                            break;
                         }
                     } catch (exception e) {
                         cout << "Wrong input , PLease try again";
@@ -579,10 +590,15 @@ void CustomerView() {
                         getline(cin, temp);
                         try {
                             auto points = stoi(temp);
-                            customer.setPointBalance(points);
-                            cout << "operation complete!";
+                            if(points > 0 ){
+                                customer.setPointBalance(points);
+                                cout << "operation complete!" << endl;
+                            }else{
+                                cout << "Wrong Input , Please try again" << endl;
+                                break;
+                            }
                         } catch (exception e) {
-                            cout << "wrong input , Please try again!";
+                            cout << "wrong input , Please try again!" << endl;
                         }
                         break;
                     }
@@ -607,6 +623,7 @@ void CustomerView() {
         }
     } while (input != 4);
     customer.toString();
+    ModifyCustomer(customer);
 }
 
 // Main function
@@ -689,7 +706,7 @@ int main() {
                             auto c = GetCustomer(customerID);
                             cout << fmt::format(
                                     "Customer: CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",
-                                    c->getCustomerID(), RanktoString[c->getRank()], c->getPointBalance());
+                                    c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance());
                             cout << "Are you sure to remove the customerID?(y/n)\n";
                             getline(cin, choice);
                             if (choice == "y") {
