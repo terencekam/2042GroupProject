@@ -7,6 +7,7 @@
 #include <list>
 #include <map>
 #include <string.h>
+#include <utility>
 #include <vector>
 #include <stdio.h>
 #include <fstream>
@@ -45,7 +46,16 @@ map<Rank, string> RanktoString = {
 time_t now = time(0);
 tm *ltm = localtime(&now);
 ofstream Filelog("latest.log");
-
+class RangeException:exception{
+public:
+    const string m_msg;
+    explicit RangeException(string msg) : m_msg(std::move(msg)){
+        cout << m_msg << "\n";
+    }
+    virtual const char*what() const throw(){
+        return m_msg.c_str();
+    }
+};
 class Logger {
     enum level {
         w, e, i
@@ -87,67 +97,19 @@ public:
 Logger logger;
 
 // Struct for Date
-struct Date {
-    Date(int year, int month, int day) {
-        Year = year;
-        Month = month;
-        Day = day;
-    }
 
-    int Year;
-    int Month;
-    int Day;
-
-    // Function to convert Date to string
-    string toString() {
-        return Year == 0 ? "No Date" : "Year: " + std::to_string(Year) + ", Month: " + std::to_string(Month) +
-                                       ", Day: " + std::to_string(Day);
-    }
-};
-// Get current date
-
-Date today = Date(1900 + ltm->tm_year, 1 + ltm->tm_mon, ltm->tm_mday);
+struct tm *today = localtime(&now);
 
 // Function to get automatic Rank based on Date
-Rank getAutoRank(Date date) {
-    int yeardiff;
-    yeardiff = today.Year - date.Year;
+Rank getAutoRank(tm *date) {
 
-    if (yeardiff > 1) {
+    auto t = mktime(reinterpret_cast<tm *>(&today));
+    auto OtherDate = mktime(date);
+    if(OtherDate-t > 31556926){
         return G;
-    }
-    if (yeardiff > 0) {
-        int tempTodayMonth;
-        int tempTodayDay;
-        int tempDateMonth;
-        int tempDateDay;
-        if ((today.Month == 2 || date.Month == 2) && (today.Day == 29 || date.Day == 29)) {
-            tempTodayMonth = today.Day == 29 ? today.Month == 2 ? 3 : today.Month : today.Month;
-            tempTodayDay = today.Day == 29 ? today.Month == 2 ? 1 : today.Day : today.Day;
-            tempDateMonth = date.Day == 29 ? date.Month == 2 ? 3 : date.Month : date.Month;
-            tempDateDay = date.Day == 29 ? date.Month == 2 ? 1 : date.Day : date.Day;
-        } else {
-            tempDateDay = date.Day;
-            tempDateMonth = date.Month;
-            tempTodayDay = today.Day;
-            tempTodayMonth = today.Month;
-        }
-        int totalMonth = 0;
-        totalMonth = 12 - tempDateMonth;
-        tempDateMonth = 0;
-
-        if (tempTodayMonth - tempDateMonth > 1) {
-            totalMonth += tempTodayMonth - tempDateMonth - 1;
-        }
-        if (tempTodayDay <= tempDateDay) {
-            totalMonth++;
-        }
-        if (totalMonth >= 12) {
-            return G;
-        }
-        if (totalMonth >= 6) {
-            return S;
-        }
+    }else if(OtherDate-t > 15778458){
+        return S;
+    }else{
         return B;
     }
 }
@@ -277,20 +239,9 @@ Customer GetCustomer(string CustomerID) {
 
 // Function to delete a customer
 bool DeleteCustomer(string CustomerID) {
-    if (HasCustomer(CustomerID)) {
-        for (int i = 0; i < customerList.size(); i++) {
-            if (customerList[i].getCustomerID() == CustomerID) {
-                auto c = GetCustomer(CustomerID);
-                cout << fmt::format(
-                        "Deleted Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'\n",
-                        c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance());
-                customerList.erase(customerList.begin() + i);
-                logger.warn(fmt::format("Customer with customerID = '{0}' was deleted", CustomerID));
-            }
-        }
-        return true;
-    }
-    return false;
+    customerList.erase( remove_if(customerList.begin(), customerList.end(),[&CustomerID](Customer o){
+        return CustomerID == o.getCustomerID();
+    }), customerList.end());
 }
 
 // Function to add a customer
@@ -320,9 +271,7 @@ bool HasRecord(GiftRecord r) {
 }
 
 void ModifyCustomer(Customer c) {
-    customerList.erase( remove_if(customerList.begin(), customerList.end(),[&c](Customer o){
-        return c.getCustomerID() == o.getCustomerID();
-    }), customerList.end());
+    DeleteCustomer(c.getCustomerID());
     customerList.emplace_back(c);
 }
 
@@ -385,66 +334,70 @@ GiftRecord getGiftRecord(string giftId) {
 }
 
 // Function to check if a date is correct
-bool isCorrectDate(string date, int *Year, int *Month, int *Day) {
-    string tempstr = {date.c_str()[4], date.c_str()[5], date.c_str()[6], date.c_str()[7]}; // Year
-    bool isThisYear = false;
-    if (stoi(tempstr) < today.Year) {
-        *Year = stoi(tempstr);
-    } else if (stoi(tempstr) == today.Year) {
-        *Year = stoi(tempstr);
-        isThisYear = true;
-    } else {
-        return false;
+tm isCorrectDate(string date) {
+    const char *dateToChar = date.data();
+    if(strlen(dateToChar) != 8){
+        throw length_error("The date length size != 8\n");
     }
-    tempstr = {date[2], date[3]};
-    if (isThisYear) {
-        if (stoi(tempstr) <= today.Month) {
-            *Month = stoi(tempstr);
-        } else {
-            return false;
+    try{
+        stoi(date);
+    }catch (invalid_argument e){
+        throw invalid_argument("The date are not numbers!\n");
+    }
+    if(stoi(date)<0){
+        throw RangeException("Date < 0");
+    }
+    int year = stoi(date.substr(4,4)); //DDMMYYY
+    int month = stoi(date.substr(2,2));
+    int day = stoi(date.substr(0,2));
+    if(year>today->tm_year+1900){
+        throw RangeException(fmt::format("Year > {}\n" , today->tm_year+1900));
+    }else if(year == today->tm_year+1900){
+        if(month>today->tm_mon){
+            throw RangeException(fmt::format("Month > {}, Since this Year = {}\n" , today->tm_mon , today->tm_year+1900));
+        }else if(month==today->tm_mon&&day>today->tm_mday){
+            throw RangeException(fmt::format("Day > {}, Since this Year = {}, this Month = {}\n" , today->tm_mday, today->tm_year+1900, today->tm_mon));
         }
-    } else if (stoi(tempstr) <= 12) {
-        *Month = stoi(tempstr);
-    } else {
-        return false;
     }
-    tempstr = {date[0], date[1]};
-    if (isThisYear) {
-        if (today.Month == *Month) {
-            if (stoi(tempstr) <= today.Day) {
-                *Day = stoi(tempstr);
-            } else {
-                return false;
+    switch (month) {
+        case 1:case 3: case 5: case 7: case 8: case 10: case 12:
+        {
+            if(day > 31){
+                throw RangeException("Days > 31\n");
             }
+            break;
         }
+        case 2:
+        {
+            if(year%4==0){
+                if(day>29){
+                    throw RangeException("Days > 29\n");
+                }
+
+            }else if(day > 28){
+                throw RangeException("Days > 28\n");
+            }
+            break;
+        }
+        case 4:case 6:case 9:case 11:
+        {
+            if(day > 30){
+                throw RangeException("Days > 30\n");
+            }
+            break;
+        }
+        default:
+            throw RangeException("month > 12\n");
     }
-    if (2 == *Month && *Year % 4 == 0) {
-        if (stoi(tempstr) <= 29) {
-            *Day = stoi(tempstr);
-        } else {
-            return false;
-        }
-    }
-    if (*Month == 1 || *Month == 3 || *Month == 5 || *Month == 7 || *Month == 8 || *Month == 10 || *Month == 12) {
-        if (stoi(tempstr) <= 31) {
-            *Day = stoi(tempstr);
-        } else {
-            return false;
-        }
-    } else if (*Month == 4 || *Month == 6 || *Month == 9 || *Month == 11) {
-        if (stoi(tempstr) <= 30) {
-            *Day = stoi(tempstr);
-        } else {
-            return false;
-        }
-    } else {
-        if (stoi(tempstr) <= 28) {
-            *Day = stoi(tempstr);
-        } else {
-            return false;
-        }
-    }
-    return true;
+    auto t = [&year,&day,&month]{
+        tm t;
+        t.tm_year = year;
+        t.tm_mon = month;
+        t.tm_mday = day;
+        return t;
+    };
+    return reinterpret_cast<const tm &>(t);
+
 }
 
 // Function for Customer View
@@ -466,14 +419,14 @@ void CustomerView() {
         // Get customer ID
         try {
             cout << "\033[1;35mAction for CustomerID: "
-            << customer.getCustomerID() <<
-                    "\n***** Customer View Menu *****\n" // Display menu
-                    "[1] Earn CC Points\n"
-                    "[2] Redeem Gifts\n"
-                    "[3] Modify CC Points Balance\n"
-                    "[4] Return to Main Menu\n"
-                    "**************************\033[0m\n"
-                    "Option (1 - 4): ";
+                 << customer.getCustomerID() <<
+                 "\n***** Customer View Menu *****\n" // Display menu
+                 "[1] Earn CC Points\n"
+                 "[2] Redeem Gifts\n"
+                 "[3] Modify CC Points Balance\n"
+                 "[4] Return to Main Menu\n"
+                 "**************************\033[0m\n"
+                 "Option (1 - 4): ";
             getline(cin, tempinput); // Get user input
             input = stoi(tempinput); // Convert input to integer
             switch (input) { // Switch case based on input
@@ -626,6 +579,7 @@ void CustomerView() {
     ModifyCustomer(customer);
 }
 
+
 // Main function
 int main() {
     string tempselect;
@@ -733,28 +687,19 @@ int main() {
                             break;
                         }
                         string tempDate;
-                        Date *date;
-                        bool CorrectDate;
+                        tm date;
                         do {
-                            try {
-                                cout << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
-                                getline(cin, tempDate);
-                                if (tempDate != "today" && tempDate.size() != 8) {
-                                    cout << "The size was wrongly input , please try again!\n";
-                                } else if (tempDate == "today") {
-                                    date = &today;
-                                    break;
-                                }
-                                int year, month, day;
-                                CorrectDate = isCorrectDate(tempDate, &year, &month, &day);
-                                if (!CorrectDate) {
-                                    cout << "The date was wrongly input , please try again!\n";
-                                } else {
-                                    Date tempdate = Date(year, month, day);
-                                    date = &tempdate;
-                                    break;
-                                }
-                            } catch (exception e) {
+                            cout << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
+                            getline(cin, tempDate);
+                            try{
+                                date = isCorrectDate(tempDate);
+                                break;
+                            }catch (RangeException e){
+                                cout << "Please try again...\n";
+                                continue;
+                            }catch (length_error e){
+                                cout << "Please try again...\n";
+                                continue;
                             }
                         } while (true);
                         int PointBalance;
@@ -775,7 +720,7 @@ int main() {
                                 PointBalance = -1;
                             }
                         } while (PointBalance < 0);
-                        AddCustomer(Customer(customerID, getAutoRank(*date), PointBalance));
+                        AddCustomer(Customer(customerID, getAutoRank(&date), PointBalance));
                     }
                     break;
                 }
