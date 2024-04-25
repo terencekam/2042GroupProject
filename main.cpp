@@ -65,6 +65,8 @@ public:
 
 // Class for Logger
 class Logger {
+
+protected:
     // Enum for level
     enum level {
         w, e, i
@@ -74,15 +76,16 @@ class Logger {
             {e, "ERROR"},
             {i, "INFO "}
     };
-private:
-    void logto(string log, level l) {
+
+    virtual void logto(string log, level l) {
         auto localtime = asctime(ltm);
         localtime[strlen(localtime)-1] = 0;
         cout << localtime << "[" << levelToString[l] << "]" << log << "\n";
         Filelog.open("latest.log", std::ofstream::app);
-        Filelog << ctime(&SystemTime) << levelToString[l] << log << "\n";
+        Filelog << localtime  << "[" << levelToString[l] << "]" << log << "\n";
         Filelog.close();
     }
+
 
 public:
     void warn(string log) {
@@ -97,7 +100,7 @@ public:
         logto(log, i);
     }
 
-    void printLog() {
+    virtual void printLog() {
         string s;
         ifstream getFile("latest.log");
         while (getline(getFile, s)) {
@@ -117,9 +120,9 @@ Rank getAutoRank(tm *date) {
 
     auto t = mktime(today);
     auto OtherDate = mktime(date);
-    if(t-OtherDate > 31556926){
+    if(t-OtherDate > 31556926){ // 1 year
         return G;
-    }else if(t-OtherDate > 15778463){
+    }else if(t-OtherDate > 15778463){ // 6 months
         return S;
     }else{
         return B;
@@ -140,8 +143,9 @@ map<GiftCategory, string> GiftCategoryToString = {
 };
 
 // Class for Customer
-class Customer {
+class Customer : Logger{
 private:
+    string log;
     string CustomerID = "";
     Rank Ranking = B;
     int PointBalance = 0;
@@ -172,7 +176,7 @@ public:
             return;
         }
         PointBalance += amount;
-        logger.info(fmt::format("Customer with ID= '{0}' added Point = '{1}'", CustomerID, amount));
+        this->info(fmt::format("Customer with ID= '{0}' added Point = '{1}'", CustomerID, amount));
     }
 
     bool minusPointBalance(int amount) {
@@ -182,7 +186,7 @@ public:
         }
         if (PointBalance >= amount) {
             PointBalance -= amount;
-            logger.info(fmt::format("Customer with ID= '{0}' deducted Point = '{1}'", CustomerID, amount));
+            this->info(fmt::format("Customer with ID= '{0}' deducted Point = '{1}'", CustomerID, amount));
             return true;
         }
         return false;
@@ -193,11 +197,24 @@ public:
             cout << "No Input occur amount<0\n";
         }
         this->PointBalance = PointBalance;
-        logger.info(fmt::format("Customer with ID = '{0}' set the Point as '{1}'", CustomerID, PointBalance));
+        this->info(fmt::format("Customer with ID = '{0}' set the Point as '{1}'", CustomerID, PointBalance));
     }
 
     void toString() {
         printf("%-15s %-4s %-d\n", CustomerID.c_str(), RanktoString[Ranking].c_str(), PointBalance);
+    }
+
+    void logto(string Log, level l) override {
+        auto localtime = asctime(ltm);
+        localtime[strlen(localtime)-1] = 0;
+        ostringstream os;
+        os << localtime << "[" << levelToString[l] << "]" << Log << "\n";
+        log += os.str();
+        Logger::logto(Log, l);
+    }
+
+    void printLog() override {
+        cout << this->log;
     }
 };
 
@@ -450,7 +467,7 @@ void CustomerView() {
             switch (input) { // Switch case based on input
                 case 1: {
                     string tempmoney;
-                    cout << "Input a amount of money";
+                    cout << "Input a amount of money: ";
                     getline(cin, tempmoney);
                     float money;
                     try {
@@ -460,11 +477,11 @@ void CustomerView() {
                             customer.addPointBalance(points); // Add points to customer
                             cout << "Points added!";
                         }else{
-                            cout << "Wrong Input , Please try again, amount < 0";
+                            cout << "Wrong Input , Please try again, amount < 0\n";
                             break;
                         }
                     } catch (exception e) {
-                        cout << "Wrong input , PLease try again";
+                        cout << "Wrong input , PLease try again\n";
                     }
                     break;
                 }
@@ -756,16 +773,44 @@ int main() {
                     CustomerView();
                     break;
                 case 5:
-                    logger.printLog();
+                {
+                    string customerID;
+                    cout << "Please input an Customer ID to get the log (You may type 'all' to get all the log): ";
+                    string next;
+                    bool passing = true;
+                    getline(cin, customerID);
+                    if (customerID.empty()) {
+                        cout << "No input found!\n";
+                        break;
+                    }
+                    for (int i = 0; i < strlen(customerID.c_str()); i++) {
+                        if (customerID.c_str()[i] == ' ') {
+                            cout << "There are space in the CustomerID! Please remove the space and try again! \n";
+                            passing = false;
+                            break;
+                        }
+                    }
+                    if (!passing) {
+                        break;
+                    }
+                    if (HasCustomer(customerID)) {
+                        auto c = GetCustomer(customerID);
+                        c.printLog();
+                    }else if(customerID=="all"){
+                        logger.printLog();
+                    }else{
+                        cout << "Wrong Type , Please try again!\n";
+                    }
                     break;
+                }
                 case 6: {
                     string confirm;
                     do {
-                        cout << "Confirm Exit?(y/n)?";
+                        cout << "Confirm Exit?(y/n)? ";
                         getline(cin, confirm);
                         if (confirm == "y") {
                             auto k = [](string studentName, string studentID, string tutorGroup) {
-                                printf("%11s %9s %4s", studentName.c_str(), studentID.c_str(), tutorGroup.c_str());
+                                printf("%11s %9s %4s\n", studentName.c_str(), studentID.c_str(), tutorGroup.c_str());
                             };
                             // Print the group members
                             k("LUO Jia Wei", "23063148A", "B03A");
