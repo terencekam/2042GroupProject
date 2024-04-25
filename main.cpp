@@ -467,7 +467,7 @@ void CustomerView() {
             switch (input) { // Switch case based on input
                 case 1: {
                     string tempmoney;
-                    cout << "Input a amount of money: ";
+                    cout << "Input an amount of money: ";
                     getline(cin, tempmoney);
                     float money;
                     try {
