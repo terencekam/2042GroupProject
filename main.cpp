@@ -25,11 +25,15 @@ using namespace std;
 // Function prototypes
 bool Fo(char, int);
 
+// Function to check if a customer exists
 bool HasCustomer(char CustomerID);
 
+// Function to get a customer
 bool AddCustomer(Customer c);
 
+// Function to delete a customer
 bool hasLoadData = false;
+
 // Enum for Rank
 enum Rank {
     G, S, B
@@ -43,7 +47,11 @@ map<Rank, string> RanktoString = {
 };
 time_t now = time(0);
 tm *ltm = localtime(&now);
-ofstream Filelog("latest.log");
+auto SystemTime = chrono::system_clock::to_time_t(chrono::system_clock::now());
+// File to store logs
+ofstream Filelog;
+
+// Custom Exception
 class RangeException:exception{
 public:
     const string m_msg;
@@ -54,18 +62,26 @@ public:
         return m_msg.c_str();
     }
 };
+
+// Class for Logger
 class Logger {
+    // Enum for level
     enum level {
         w, e, i
     };
     map<level, string> levelToString = {
-            {w, "WARN"},
-            {e, "ERROR "},
-            {i, "INFO"}
+            {w, "WARN "},
+            {e, "ERROR"},
+            {i, "INFO "}
     };
 private:
     void logto(string log, level l) {
-        Filelog << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << levelToString[l] << log << "\n";
+        auto localtime = asctime(ltm);
+        localtime[strlen(localtime)-1] = 0;
+        cout << localtime << "[" << levelToString[l] << "]" << log << "\n";
+        Filelog.open("latest.log", std::ofstream::app);
+        Filelog << ctime(&SystemTime) << levelToString[l] << log << "\n";
+        Filelog.close();
     }
 
 public:
@@ -83,12 +99,10 @@ public:
 
     void printLog() {
         string s;
-        Filelog.close();
         ifstream getFile("latest.log");
         while (getline(getFile, s)) {
             cout << s << endl;
         }
-        Filelog.open("latest.log");
     }
 };
 
@@ -98,7 +112,7 @@ Logger logger;
 
 struct tm *today = localtime(&now);
 
-// Function to get automatic Rank based on Date
+// Function to get auto rank
 Rank getAutoRank(tm *date) {
 
     auto t = mktime(today);
@@ -247,6 +261,7 @@ bool AddCustomer(Customer c) {
     if (HasCustomer(c.getCustomerID())) {
         return false;
     }
+    // Check if the point balance is negative
     if(c.getPointBalance()<0){
         cout << "No Input occur amount<0\n";
     }
@@ -268,6 +283,7 @@ bool HasRecord(GiftRecord r) {
     return false;
 }
 
+// Function to modify a customer
 void ModifyCustomer(Customer c) {
     DeleteCustomer(c.getCustomerID());
     customerList.emplace_back(c);
@@ -314,6 +330,7 @@ void initialsiation() {
 }
 
 bool HasGiftRecord(string giftId) {
+    // Check if the gift record exists
     for (const auto &item: giftRecordList) {
         if (item.GiftID == giftId) {
             return true;
@@ -323,6 +340,7 @@ bool HasGiftRecord(string giftId) {
 }
 
 GiftRecord getGiftRecord(string giftId) {
+    // Get the gift record
     for (const auto &item: giftRecordList) {
         if (item.GiftID == giftId) {
             return item;
@@ -357,6 +375,7 @@ tm isCorrectDate(string date) {
             throw RangeException(fmt::format("Day > {}, Since this Year = {}, this Month = {}\n" , today->tm_mday, today->tm_year+1900, today->tm_mon+1));
         }
     }
+    // Check if the date is correct
     switch (month) {
         case 1:case 3: case 5: case 7: case 8: case 10: case 12:
         {
@@ -458,6 +477,7 @@ void CustomerView() {
                             getline(cin, temp); // Get category
                             char category[10];
                             strcpy(category, temp.c_str());
+                            // Check if category is valid
                             if (69 > static_cast<int>(*category) && static_cast<int>(*category) > 64) {
                                 sort(giftRecordList.begin(), giftRecordList.end(), // Sort gift records
                                      [](GiftRecord a, GiftRecord b) { // Lambda function to sort gift records
@@ -671,6 +691,7 @@ int main() {
                         } while (choice != "y" && choice != "n");
                         break;
                     } else {
+                        // if the customerID larger than 50 , it will not be added
                         if(customerID.size()>50){
                             cout << "Error ... CustomerID > 50\n";
                             break;
@@ -688,6 +709,7 @@ int main() {
                         string tempDate;
                         tm date;
                         do {
+                            // Get the date
                             cout << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
                             getline(cin, tempDate);
                             try{
@@ -704,6 +726,7 @@ int main() {
                         int PointBalance;
                         do {
                             try {
+                                // Get the initial points
                                 cout << "Input the Initial points:";
                                 string tempinput;
                                 getline(cin, tempinput);
@@ -738,6 +761,7 @@ int main() {
                             auto k = [](string studentName, string studentID, string tutorGroup) {
                                 printf("%11s %9s %4s", studentName.c_str(), studentID.c_str(), tutorGroup.c_str());
                             };
+                            // Print the group members
                             k("LUO Jia Wei", "23063148A", "B03A");
                             k("Siu Lok", "23092746A", "B03C");
                             k("Shih Richard", "23082415A", "B03B");
