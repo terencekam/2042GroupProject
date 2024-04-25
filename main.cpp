@@ -215,6 +215,10 @@ public:
     }
 
     void printLog() override {
+        if(this->log.empty()){
+            cout << "No Transaction on Customer: " << this->CustomerID << endl;
+            return;
+        }
         cout << this->log;
     }
 };
@@ -513,10 +517,11 @@ void CustomerView() {
                                          return false;
                                      }
                                 );
+                                printf("%-7s %-10s %-17s %s\n", "GiftID", "Price(HKD)", "Points Required", "Gift Description");
                                 for_each(giftRecordList.begin(), giftRecordList.end(),
                                          [&category, &customer](GiftRecord j) {
                                              if ((char) j.giftCategory == (char) *category) {
-                                                 printf("%-3s %-5d %-5d%s %s\n", j.GiftID, j.price, j.PointRequired,
+                                                 printf("%-7s %-10d %-17d %s\n", j.GiftID, j.price, j.PointRequired,
                                                         j.PointRequired <= customer.getPointBalance()
                                                         ? "(enough Points!)" : "(not enough Points!)",
                                                         j.GiftDiscription);
@@ -527,21 +532,27 @@ void CustomerView() {
                                 if (!temp.empty()) {
                                     if (HasGiftRecord(temp)) {
                                         GiftRecord g = getGiftRecord(temp);
-                                        if (g.PointRequired <= customer.getPointBalance()) {
+                                        if ([&customer, &g]() {
+                                            switch (customer.getRank()) {
+                                                case G:
+                                                    return g.PointRequired * 0.9;
+                                                case S:
+                                                    return g.PointRequired * 0.95;
+                                                default:
+                                                    return (double)g.PointRequired;
+                                            }
+                                        }.operator()() <= customer.getPointBalance()) {
                                             cout << "You can get the gift freely!\ncontinue?(y/n): ";
                                         } else {
                                             printf("You have not enough points, you may pay extra of %.0f to redeem the gift and all the points will be deducted, continue?(y/n) ",
                                                    [&customer, &g]() {
                                                        switch (customer.getRank()) {
                                                            case G:
-                                                               return (g.PointRequired - customer.getPointBalance()) *
-                                                                      0.9 * 0.2;
+                                                               return (g.PointRequired * 0.9 - customer.getPointBalance()) * 0.2;
                                                            case S:
-                                                               return (g.PointRequired - customer.getPointBalance()) *
-                                                                      0.9 * 0.2;
+                                                               return (g.PointRequired * 0.95 - customer.getPointBalance()) * 0.2;
                                                            default:
-                                                               return g.PointRequired -
-                                                                      customer.getPointBalance() * 0.2;
+                                                               return (g.PointRequired - customer.getPointBalance()) * 0.2;
                                                        }
                                                    }.operator()());
                                         }
@@ -569,6 +580,8 @@ void CustomerView() {
                                 } else {
                                     cout << "no input , please try again!\n";
                                 }
+                            }else{
+                                cout << "Wrong input received!\n";
                             }
                         } catch (exception e) {
 
@@ -824,7 +837,7 @@ int main() {
                         confirm = tolower(*confirm.c_str());
                         if (confirm == "y") {
                             auto k = [](string studentName, string studentID, string tutorGroup) {
-                                printf("%11s %9s %4s\n", studentName.c_str(), studentID.c_str(), tutorGroup.c_str());
+                                printf("%-11s %-9s %-4s\n", studentName.c_str(), studentID.c_str(), tutorGroup.c_str());
                             };
                             // Print the group members
                             k("LUO Jia Wei", "23063148A", "B03A");
