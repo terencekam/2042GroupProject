@@ -197,7 +197,7 @@ public:
     }
 
     void toString() {
-        printf("%-15s %-s %-d\n", CustomerID.c_str(), RanktoString[Ranking].c_str(), PointBalance);
+        printf("%-15s %-4s %-d\n", CustomerID.c_str(), RanktoString[Ranking].c_str(), PointBalance);
     }
 };
 
@@ -222,7 +222,7 @@ struct GiftRecord {
     }
 
     void toString() {
-        printf("%-3s %-5d %-5d %s\n", GiftID, price, PointRequired, GiftDiscription);
+        printf("%-7s %-10d %-17d %s\n", GiftID, price, PointRequired, GiftDiscription);
     }
 };
 
@@ -643,11 +643,11 @@ int main() {
                         }
                         return true;
                     });
-                    printf("%-15s %-6s %-s\n", "Customer ID", "Rank", "Point Balance");
+                    printf("%-15s %-4s %-s\n", "Customer ID", "Rank", "Point Balance");
                     for (auto customer_list: customerList) {
                         customer_list.toString();
                     }
-                    printf("%-5s %-7s %-9s %s\n", "GiftID", "Price(HKD)", "Points Required", "Gift Description");
+                    printf("%-7s %-10s %-17s %s\n", "GiftID", "Price(HKD)", "Points Required", "Gift Description");
                     for (auto giftRecord: giftRecordList) {
                         giftRecord.toString();
                     }
