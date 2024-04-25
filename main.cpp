@@ -103,11 +103,9 @@ Rank getAutoRank(tm *date) {
 
     auto t = mktime(today);
     auto OtherDate = mktime(date);
-    cout << "Other" << OtherDate;
-    cout << "today" << t;
-    if(OtherDate-t > 31556926){
+    if(t-OtherDate > 31556926){
         return G;
-    }else if(OtherDate-t > 15778463){
+    }else if(t-OtherDate > 15778463){
         return S;
     }else{
         return B;
