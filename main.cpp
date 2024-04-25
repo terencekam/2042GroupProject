@@ -678,11 +678,12 @@ int main() {
                         do {
                             auto c = GetCustomer(customerID);
                             cout << fmt::format(
-                                    "Customer: CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",
+                                    "Customer: CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'\n",
                                     c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance());
                             cout << "Are you sure to remove the customerID?(y/n)\n";
                             getline(cin, choice);
                             if (choice == "y") {
+                                logger.info(fmt::format("Customer with ID = '{0}' removed , CustomerRank = '{1}' , PointBalance= '{2}", customerID , RanktoString[c.getRank()], c.getPointBalance()));
                                 DeleteCustomer(customerID);
                             }
                             if (choice != "y" && choice != "n") {
