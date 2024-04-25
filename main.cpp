@@ -47,18 +47,19 @@ map<Rank, string> RanktoString = {
 };
 time_t now = time(0);
 tm *ltm = localtime(&now);
-auto SystemTime = chrono::system_clock::to_time_t(chrono::system_clock::now());
 // File to store logs
 ofstream Filelog;
 
 // Custom Exception
-class RangeException:exception{
+class RangeException : exception {
 public:
     const string m_msg;
-    explicit RangeException(string msg) : m_msg(std::move(msg)){
+
+    explicit RangeException(string msg) : m_msg(std::move(msg)) {
         cout << m_msg << "\n";
     }
-    virtual const char*what() const throw(){
+
+    virtual const char *what() const throw() {
         return m_msg.c_str();
     }
 };
@@ -79,10 +80,10 @@ protected:
 
     virtual void logto(string log, level l) {
         auto localtime = asctime(ltm);
-        localtime[strlen(localtime)-1] = 0;
+        localtime[strlen(localtime) - 1] = 0;
         cout << localtime << "[" << levelToString[l] << "]" << log << "\n";
         Filelog.open("latest.log", std::ofstream::app);
-        Filelog << localtime  << "[" << levelToString[l] << "]" << log << "\n";
+        Filelog << localtime << "[" << levelToString[l] << "]" << log << "\n";
         Filelog.close();
     }
 
@@ -120,11 +121,11 @@ Rank getAutoRank(tm *date) {
 
     auto t = mktime(today);
     auto OtherDate = mktime(date);
-    if(t-OtherDate > 31556926){ // 1 year
+    if (t - OtherDate > 31556926) { // 1 year
         return G;
-    }else if(t-OtherDate > 15778463){ // 6 months
+    } else if (t - OtherDate > 15778463) { // 6 months
         return S;
-    }else{
+    } else {
         return B;
     }
 }
@@ -143,7 +144,7 @@ map<GiftCategory, string> GiftCategoryToString = {
 };
 
 // Class for Customer
-class Customer : Logger{
+class Customer : Logger {
 private:
     string log;
     string CustomerID = "";
@@ -171,7 +172,7 @@ public:
     }
 
     void addPointBalance(int amount) {
-        if(amount<0){
+        if (amount < 0) {
             cout << "No Input occur amount<0\n";
             return;
         }
@@ -180,7 +181,7 @@ public:
     }
 
     bool minusPointBalance(int amount) {
-        if(amount<0){
+        if (amount < 0) {
             cout << "No Input occur amount<0\n";
             return false;
         }
@@ -193,7 +194,7 @@ public:
     }
 
     void setPointBalance(int PointBalance) {
-        if(PointBalance<0){
+        if (PointBalance < 0) {
             cout << "No Input occur amount<0\n";
         }
         this->PointBalance = PointBalance;
@@ -206,7 +207,7 @@ public:
 
     void logto(string Log, level l) override {
         auto localtime = asctime(ltm);
-        localtime[strlen(localtime)-1] = 0;
+        localtime[strlen(localtime) - 1] = 0;
         ostringstream os;
         os << localtime << "[" << levelToString[l] << "]" << Log << "\n";
         log += os.str();
@@ -263,12 +264,12 @@ Customer GetCustomer(string CustomerID) {
             return customer_list;
         }
     }
-    return {"" , G, -1};
+    return {"", G, -1};
 }
 
 // Function to delete a customer
 auto DeleteCustomer = [](string CustomerID) {
-    customerList.erase( remove_if(customerList.begin(), customerList.end(),[&CustomerID](Customer o){
+    customerList.erase(remove_if(customerList.begin(), customerList.end(), [&CustomerID](Customer o) {
         return CustomerID == o.getCustomerID();
     }), customerList.end());
 };
@@ -279,7 +280,7 @@ bool AddCustomer(Customer c) {
         return false;
     }
     // Check if the point balance is negative
-    if(c.getPointBalance()<0){
+    if (c.getPointBalance() < 0) {
         cout << "No Input occur amount<0\n";
     }
     customerList.emplace_back(c);
@@ -369,53 +370,61 @@ GiftRecord getGiftRecord(string giftId) {
 // Function to check if a date is correct
 tm isCorrectDate(string date) {
     const char *dateToChar = date.data();
-    if(strlen(dateToChar) != 8){
+    if (strlen(dateToChar) != 8) {
         throw length_error("The date length size != 8\n");
     }
-    try{
+    try {
         stoi(date);
-    }catch (invalid_argument e){
+    } catch (invalid_argument e) {
         throw invalid_argument("The date are not numbers!\n");
     }
-    if(stoi(date)<0){
+    if (stoi(date) < 0) {
         throw RangeException("Date < 0");
     }
-    int year = stoi(date.substr(4,4)); //DDMMYYY
-    int month = stoi(date.substr(2,2));
-    int day = stoi(date.substr(0,2));
-    if(year>today->tm_year+1900){
-        throw RangeException(fmt::format("Year > {}\n" , today->tm_year+1900));
-    }else if(year == today->tm_year+1900){
-        if(month>today->tm_mon+1){
-            throw RangeException(fmt::format("Month > {}, Since this Year = {}\n" , today->tm_mon+1 , today->tm_year+1900));
-        }else if(month==today->tm_mon+1&&day>today->tm_mday){
-            throw RangeException(fmt::format("Day > {}, Since this Year = {}, this Month = {}\n" , today->tm_mday, today->tm_year+1900, today->tm_mon+1));
+    int year = stoi(date.substr(4, 4)); //DDMMYYY
+    int month = stoi(date.substr(2, 2));
+    int day = stoi(date.substr(0, 2));
+    if (year > today->tm_year + 1900) {
+        throw RangeException(fmt::format("Year > {}\n", today->tm_year + 1900));
+    } else if (year == today->tm_year + 1900) {
+        if (month > today->tm_mon + 1) {
+            throw RangeException(
+                    fmt::format("Month > {}, Since this Year = {}\n", today->tm_mon + 1, today->tm_year + 1900));
+        } else if (month == today->tm_mon + 1 && day > today->tm_mday) {
+            throw RangeException(fmt::format("Day > {}, Since this Year = {}, this Month = {}\n", today->tm_mday,
+                                             today->tm_year + 1900, today->tm_mon + 1));
         }
     }
     // Check if the date is correct
     switch (month) {
-        case 1:case 3: case 5: case 7: case 8: case 10: case 12:
-        {
-            if(day > 31){
+        case 1:
+        case 3:
+        case 5:
+        case 7:
+        case 8:
+        case 10:
+        case 12: {
+            if (day > 31) {
                 throw RangeException("Days > 31\n");
             }
             break;
         }
-        case 2:
-        {
-            if(year%4==0){
-                if(day>29){
+        case 2: {
+            if (year % 4 == 0) {
+                if (day > 29) {
                     throw RangeException("Days > 29\n");
                 }
 
-            }else if(day > 28){
+            } else if (day > 28) {
                 throw RangeException("Days > 28\n");
             }
             break;
         }
-        case 4:case 6:case 9:case 11:
-        {
-            if(day > 30){
+        case 4:
+        case 6:
+        case 9:
+        case 11: {
+            if (day > 30) {
                 throw RangeException("Days > 30\n");
             }
             break;
@@ -423,7 +432,7 @@ tm isCorrectDate(string date) {
         default:
             throw RangeException("month > 12\n");
     }
-    auto t = [&year,&day,&month]{
+    auto t = [&year, &day, &month] {
         struct tm t = {0};
         t.tm_year = year - 1900;
         t.tm_mon = month - 1;
@@ -476,7 +485,7 @@ void CustomerView() {
                             int points = (int) (money / 250);
                             customer.addPointBalance(points); // Add points to customer
                             cout << "Points added!";
-                        }else{
+                        } else {
                             cout << "Wrong Input , Please try again, amount < 0\n";
                             break;
                         }
@@ -579,10 +588,10 @@ void CustomerView() {
                         getline(cin, temp);
                         try {
                             auto points = stoi(temp);
-                            if(points > 0 ){
+                            if (points > 0) {
                                 customer.setPointBalance(points);
                                 cout << "operation complete!" << endl;
-                            }else{
+                            } else {
                                 cout << "Wrong Input , Please try again" << endl;
                                 break;
                             }
@@ -699,8 +708,11 @@ int main() {
                                     c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance());
                             cout << "Are you sure to remove the customerID?(y/n)\n";
                             getline(cin, choice);
+                            choice = tolower(*choice.c_str());
                             if (choice == "y") {
-                                logger.info(fmt::format("Customer with ID = '{0}' removed , CustomerRank = '{1}' , PointBalance= '{2}", customerID , RanktoString[c.getRank()], c.getPointBalance()));
+                                logger.info(fmt::format(
+                                        "Customer with ID = '{0}' removed , CustomerRank = '{1}' , PointBalance= '{2}",
+                                        customerID, RanktoString[c.getRank()], c.getPointBalance()));
                                 DeleteCustomer(customerID);
                             }
                             if (choice != "y" && choice != "n") {
@@ -710,13 +722,14 @@ int main() {
                         break;
                     } else {
                         // if the customerID larger than 50 , it will not be added
-                        if(customerID.size()>50){
+                        if (customerID.size() > 50) {
                             cout << "Error ... CustomerID > 50\n";
                             break;
                         }
                         do {
                             cout << "No Customer ID found ... Are you sure to add the Customer?(y/n)\n";
                             getline(cin, choice);
+                            choice = tolower(*choice.c_str());
                             if (choice != "y" && choice != "n") {
                                 cout << "Wrong Input , please try again!\n";
                             }
@@ -728,20 +741,21 @@ int main() {
                         tm date;
                         do {
                             // Get the date
-                            cout << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
+                            cout
+                                    << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
                             getline(cin, tempDate);
-                            try{
-                                if(tempDate == "today"){
+                            try {
+                                if (tempDate == "today") {
                                     date = *today;
                                     break;
-                                }else{
+                                } else {
                                     date = isCorrectDate(tempDate);
                                     break;
                                 }
-                            }catch (RangeException e){
+                            } catch (RangeException e) {
                                 cout << "Please try again...\n";
                                 continue;
-                            }catch (length_error e){
+                            } catch (length_error e) {
                                 cout << "Please try again...\n";
                                 continue;
                             }
@@ -772,8 +786,7 @@ int main() {
                 case 4:
                     CustomerView();
                     break;
-                case 5:
-                {
+                case 5: {
                     string customerID;
                     cout << "Please input an Customer ID to get the log (You may type 'all' to get all the log): ";
                     string next;
@@ -796,9 +809,9 @@ int main() {
                     if (HasCustomer(customerID)) {
                         auto c = GetCustomer(customerID);
                         c.printLog();
-                    }else if(customerID=="all"){
+                    } else if (customerID == "all") {
                         logger.printLog();
-                    }else{
+                    } else {
                         cout << "Wrong Type , Please try again!\n";
                     }
                     break;
@@ -808,6 +821,7 @@ int main() {
                     do {
                         cout << "Confirm Exit?(y/n)? ";
                         getline(cin, confirm);
+                        confirm = tolower(*confirm.c_str());
                         if (confirm == "y") {
                             auto k = [](string studentName, string studentID, string tutorGroup) {
                                 printf("%11s %9s %4s\n", studentName.c_str(), studentID.c_str(), tutorGroup.c_str());
@@ -823,7 +837,7 @@ int main() {
                         } else if (confirm == "n") {
                             select = -1;
                         } else {
-                            cout << "wrong input please try again";
+                            cout << "wrong input please try again\n";
                         }
                     } while (confirm != "y" && confirm != "n");
                     break;
