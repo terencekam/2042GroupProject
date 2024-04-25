@@ -713,8 +713,13 @@ int main() {
                             cout << "Please input a date with DDMMYYYY(There should be 8 character of integer , or otherwise an error will occur. You may type 'today'(case sensitive) such that the customer join as member today)\n";
                             getline(cin, tempDate);
                             try{
-                                date = isCorrectDate(tempDate);
-                                break;
+                                if(tempDate == "today"){
+                                    date = *today;
+                                    break;
+                                }else{
+                                    date = isCorrectDate(tempDate);
+                                    break;
+                                }
                             }catch (RangeException e){
                                 cout << "Please try again...\n";
                                 continue;
