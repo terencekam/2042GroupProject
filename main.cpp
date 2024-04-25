@@ -27,8 +27,6 @@ bool Fo(char, int);
 
 bool HasCustomer(char CustomerID);
 
-bool DeleteCustomer(char CustomerID);
-
 bool AddCustomer(Customer c);
 
 bool hasLoadData = false;
@@ -103,11 +101,13 @@ struct tm *today = localtime(&now);
 // Function to get automatic Rank based on Date
 Rank getAutoRank(tm *date) {
 
-    auto t = mktime(reinterpret_cast<tm *>(&today));
+    auto t = mktime(today);
     auto OtherDate = mktime(date);
+    cout << "Other" << OtherDate;
+    cout << "today" << t;
     if(OtherDate-t > 31556926){
         return G;
-    }else if(OtherDate-t > 15778458){
+    }else if(OtherDate-t > 15778463){
         return S;
     }else{
         return B;
@@ -238,11 +238,11 @@ Customer GetCustomer(string CustomerID) {
 }
 
 // Function to delete a customer
-bool DeleteCustomer(string CustomerID) {
+auto DeleteCustomer = [](string CustomerID) {
     customerList.erase( remove_if(customerList.begin(), customerList.end(),[&CustomerID](Customer o){
         return CustomerID == o.getCustomerID();
     }), customerList.end());
-}
+};
 
 // Function to add a customer
 bool AddCustomer(Customer c) {
@@ -353,10 +353,10 @@ tm isCorrectDate(string date) {
     if(year>today->tm_year+1900){
         throw RangeException(fmt::format("Year > {}\n" , today->tm_year+1900));
     }else if(year == today->tm_year+1900){
-        if(month>today->tm_mon){
-            throw RangeException(fmt::format("Month > {}, Since this Year = {}\n" , today->tm_mon , today->tm_year+1900));
-        }else if(month==today->tm_mon&&day>today->tm_mday){
-            throw RangeException(fmt::format("Day > {}, Since this Year = {}, this Month = {}\n" , today->tm_mday, today->tm_year+1900, today->tm_mon));
+        if(month>today->tm_mon+1){
+            throw RangeException(fmt::format("Month > {}, Since this Year = {}\n" , today->tm_mon+1 , today->tm_year+1900));
+        }else if(month==today->tm_mon+1&&day>today->tm_mday){
+            throw RangeException(fmt::format("Day > {}, Since this Year = {}, this Month = {}\n" , today->tm_mday, today->tm_year+1900, today->tm_mon+1));
         }
     }
     switch (month) {
@@ -390,13 +390,14 @@ tm isCorrectDate(string date) {
             throw RangeException("month > 12\n");
     }
     auto t = [&year,&day,&month]{
-        tm t;
-        t.tm_year = year;
-        t.tm_mon = month;
+        struct tm t = {0};
+        t.tm_year = year - 1900;
+        t.tm_mon = month - 1;
         t.tm_mday = day;
         return t;
     };
-    return reinterpret_cast<const tm &>(t);
+
+    return t();
 
 }
 
