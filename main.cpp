@@ -770,7 +770,6 @@ void CustomerView() {
     ModifyCustomer(customer);
 }
 
-
 // Main function
 int main() {
     string tempselect;
