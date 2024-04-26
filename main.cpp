@@ -144,7 +144,7 @@ private:
     Rank Ranking = B;
     int PointBalance = 0;
 public:
-    Customer() {};
+    Customer() = default;
 
     Customer(string customerID, Rank rank, int pointBalance) {
         if(pointBalance < 0){
@@ -163,7 +163,7 @@ public:
         return Ranking;
     }
 
-    int getPointBalance() {
+    int getPointBalance() const {
         return PointBalance;
     }
 
@@ -173,7 +173,7 @@ public:
             return;
         }
         PointBalance += amount;
-        this->log((fmt::format("Customer with ID= '{0}' added Point = '{1}'", CustomerID, amount)),info);
+        this->log((fmt::format("Customer with ID= '{0}' added Point = '{1}, new Point = {2}'", CustomerID, amount , PointBalance)),info);
     }
 
     bool minusPointBalance(int amount) {
@@ -183,18 +183,20 @@ public:
         }
         if (PointBalance >= amount) {
             PointBalance -= amount;
-            this->log(fmt::format("Customer with ID= '{0}' deducted Point = '{1}'", CustomerID, amount),info);
+            this->log(fmt::format("Customer with ID= '{0}': deducted Point = '{1}, new Point = {2}'", CustomerID, amount , PointBalance),info);
             return true;
         }
         return false;
     }
 
-    void setPointBalance(int PointBalance) {
-        if (PointBalance < 0) {
+    void setPointBalance(int pointBalance) {
+        if (pointBalance < 0) {
             cout << "No Input occur amount<0\n";
+            this->log(fmt::format("ERROR: Customer with ID = '{0}' trying to set a negative Point , Want to set Point : {1} , Old Point: {2} ", CustomerID, pointBalance , this->PointBalance),error);
         }
-        this->PointBalance = PointBalance;
-        this->log(fmt::format("Customer with ID = '{0}' set the Point as '{1}'", CustomerID, PointBalance),info);
+        auto oldPoint = this->PointBalance;
+        this->PointBalance = pointBalance;
+        this->log(fmt::format("Customer with ID = '{0}' set the Point as '{1}' , old point: {2}", CustomerID, pointBalance , oldPoint), info);
     }
 
     void toString() {
@@ -289,16 +291,6 @@ bool AddCustomer(Customer c) {
     logger.log(fmt::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",
                             c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance()),info);
     return true;
-}
-
-// Function to check if a record exists
-bool HasRecord(GiftRecord r) {
-    for (auto gift_record_list: giftRecordList) {
-        if (r.GiftID == gift_record_list.GiftID) {
-            return true;
-        }
-    }
-    return false;
 }
 
 // Function to modify a customer
@@ -497,6 +489,7 @@ void CustomerView() {
                     break;
                 }
                 case 2: {
+                    int end = false;
                     int times = 0;
                     do {
                         try {
@@ -555,35 +548,40 @@ void CustomerView() {
                                             InternalCount = 0;
                                             do {
                                                 GiftRecord g = getGiftRecord(temp);
+                                                auto PointRequired = getPointRequired(customer , g);
+                                                auto extraPay = [&PointRequired](Customer c, const GiftRecord& g) {
+                                                    switch (c.getRank()) {
+                                                        case G:
+                                                            return (PointRequired - c.getPointBalance()) * 0.2;
+                                                        case S:
+                                                            return (PointRequired * 0.95 - c.getPointBalance()) * 0.2;
+                                                        default:
+                                                            return (PointRequired - c.getPointBalance()) * 0.2;
+                                                    }
+                                                };
                                                 if (
-                                                        getPointRequired(customer, g) <= customer.getPointBalance()) {
+                                                        PointRequired <= customer.getPointBalance()) {
                                                         cout << "You can get the gift freely!\ncontinue?(y/n): ";
                                                 } else {
                                                     printf("You have not enough points, you may pay extra of $%.0f to redeem the gift and all the points will be deducted, continue?(y/n) ",
-                                                           [&customer, &g]() {
-                                                               switch (customer.getRank()) {
-                                                                   case G:
-                                                                       return (g.PointRequired * 0.9 -
-                                                                               customer.getPointBalance()) * 0.2;
-                                                                   case S:
-                                                                       return (g.PointRequired * 0.95 -
-                                                                               customer.getPointBalance()) * 0.2;
-                                                                   default:
-                                                                       return (g.PointRequired -
-                                                                               customer.getPointBalance()) * 0.2;
-                                                               }
-                                                           }.operator()());
+                                                           extraPay(customer, g));
                                                 }
                                                 getline(cin, temp);
                                                 if (!temp.empty()) {
                                                     if (temp == "y") {
-                                                        if (g.PointRequired <= customer.getPointBalance()) {
-                                                            customer.minusPointBalance(g.PointRequired);
+                                                        if (PointRequired <= customer.getPointBalance()) {
+                                                            customer.minusPointBalance((int)PointRequired);
+                                                            customer.log(fmt::format("Customer with ID = '{0}' redeemed the gift with ID = '{1}' , Points Required = '{2}' , Price = $'{3}' , Description = '{4}'",
+                                                                                       customer.getCustomerID(), g.GiftID, PointRequired, g.price, g.GiftDiscription),info);
                                                             cout << "redeemed!\n";
+                                                            end = true;
                                                             break;
                                                         } else {
                                                             customer.setPointBalance(0);
+                                                            customer.log(fmt::format("Customer with ID = '{0}' redeemed the gift with ID = '{1}' , Points Required = '{2}' , Price = $'{3}' , Description = '{4}' , ExtraPay = ${5}",
+                                                                                     customer.getCustomerID(), g.GiftID, PointRequired, g.price, g.GiftDiscription , extraPay(customer , g)),info);
                                                             cout << "redeemed!\n";
+                                                            end = true;
                                                             break;
                                                         }
                                                     } else if (temp == "n") {
@@ -604,15 +602,21 @@ void CustomerView() {
                                     } else {
                                         cout << "no input , please try again!\n";
                                     }
+                                    if(end){
+                                        break;
+                                    }
                                     InternalCount++;
                                     times++;
-                                }while (InternalCount <= 2);
+                                }while (InternalCount <= 2 );
                             }else{
                                 cout << "Wrong input received!\n";
                                 throw invalid_argument("Wrong input received!\n");
                             }
                         } catch (exception e) {
                             times++;
+                        }
+                        if(end){
+                            break;
                         }
                         if (times >= 2) {
                             cout << "Input error > 3... Exiting\n";
@@ -628,7 +632,7 @@ void CustomerView() {
                         getline(cin, temp);
                         try {
                             auto points = stoi(temp);
-                            if (points > 0) {
+                            if (points >= 0) {
                                 customer.setPointBalance(points);
                                 cout << "operation complete!" << endl;
                             } else {
