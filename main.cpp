@@ -523,16 +523,27 @@ void CustomerView() {
                                 int InternalCount = 0;
                                 times = 0;
                                 do {
-                                    printf("%-5s %-7s %-10s %-24s %s\n", "Type", "GiftID", "Price(HKD)", "Points Required", "Gift Description");
+                                    auto getPointRequired =  [](Customer c , GiftRecord g) {
+                                        switch (c.getRank()) {
+                                            case G:
+                                                return g.PointRequired * 0.9;
+                                            case S:
+                                                return g.PointRequired * 0.95;
+                                            default:
+                                                return (double) g.PointRequired;
+                                        }
+                                    };
+                                    printf("%-5s %-7s %-10s %-28s %s\n", "Type", "GiftID", "Price(HKD)", "Points Required", "Gift Description");
                                     for_each(giftRecordList.begin(), giftRecordList.end(),
-                                             [&category, &customer](GiftRecord j) {
+                                             [&category, &customer, &getPointRequired](GiftRecord j) {
+                                        auto PointRequired = getPointRequired(customer, j);
                                                  if (tolower(*GiftCategoryToString[j.giftCategory].first.c_str()) == tolower(*category)) {
-                                                     printf("%-5s %-7s %-10d %-7d%-17s %s\n",
+                                                     printf("%-5s %-7s %-10d %-7d%-21s %s\n",
                                                             GiftCategoryToString[j.giftCategory].first.c_str() ,
                                                             j.GiftID.c_str(),
                                                             j.price,
-                                                            j.PointRequired,
-                                                            j.PointRequired <= customer.getPointBalance() ? "(enough Points!)" : "(not enough Points!)",
+                                                            (int)PointRequired,
+                                                            PointRequired <= customer.getPointBalance() ? "(enough Points!)" : "(not enough Points!)",
                                                             j.GiftDiscription.c_str());
                                                  }
                                              });
@@ -540,22 +551,15 @@ void CustomerView() {
                                     getline(cin, temp);
                                     if (!temp.empty()) {
                                         if (HasGiftRecord(temp)) {
+
                                             InternalCount = 0;
                                             do {
                                                 GiftRecord g = getGiftRecord(temp);
-                                                if ([&customer, &g]() {
-                                                    switch (customer.getRank()) {
-                                                        case G:
-                                                            return g.PointRequired * 0.9;
-                                                        case S:
-                                                            return g.PointRequired * 0.95;
-                                                        default:
-                                                            return (double) g.PointRequired;
-                                                    }
-                                                }.operator()() <= customer.getPointBalance()) {
-                                                    cout << "You can get the gift freely!\ncontinue?(y/n): ";
+                                                if (
+                                                        getPointRequired(customer, g) <= customer.getPointBalance()) {
+                                                        cout << "You can get the gift freely!\ncontinue?(y/n): ";
                                                 } else {
-                                                    printf("You have not enough points, you may pay extra of %.0f to redeem the gift and all the points will be deducted, continue?(y/n) ",
+                                                    printf("You have not enough points, you may pay extra of $%.0f to redeem the gift and all the points will be deducted, continue?(y/n) ",
                                                            [&customer, &g]() {
                                                                switch (customer.getRank()) {
                                                                    case G:
@@ -602,7 +606,6 @@ void CustomerView() {
                                     }
                                     InternalCount++;
                                     times++;
-                                    cout << InternalCount << endl;
                                 }while (InternalCount <= 2);
                             }else{
                                 cout << "Wrong input received!\n";
