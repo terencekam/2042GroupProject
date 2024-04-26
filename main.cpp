@@ -4,6 +4,9 @@ Discrimination: This program is using 360-day calendar for the calculation of th
 6 Months = 180 days
 1 Month = 30 days
 
+All the program used std::getline to get the input from the user so as to avoid the buffer overflow
+To decrease the complexity of the code, I used used lambda function.
+
  This project is built under:
 1. C++20
 2. CMake 3.21.3
@@ -48,18 +51,22 @@ enum Rank {
     G, S, B
 };
 
-// Map to convert Rank to string
+// Map to convert Rank to string so that them enum can be printed without using switch case or if else
 map<Rank, string> RanktoString = {
         {G, "G"},
         {S, "S"},
         {B, "B"}
 };
+
+// Time for logs
 time_t now = time(0);
 tm* ltm = localtime(&now);
-// File to store logs
+
+// File to store logs so as to keep track of the transactions
 ofstream Filelog;
 
 // Custom Exception
+// Used polymorphism to override the what() function so as to get the custom message when the exception is thrown
 class RangeException : exception {
 public:
     const string m_msg;
@@ -68,25 +75,29 @@ public:
         cout << m_msg << "\n";
     }
 
+    // Override the what() function to get the custom message
     virtual const char* what() const throw() {
         return m_msg.c_str();
     }
 };
 
-// Enum for level
+// Enum for level of logs so as to differentiate the level between the logs
 enum level {
     warn, error, info
 };
+
+//By using map we can convert the enum to string so as to print the level of logs
 map<level, string> levelToString = {
         {warn, "WARN "},
         {error, "ERROR"},
         {info, "INFO "}
 };
+
 // Class for Logger
 class Logger {
 
 public:
-
+// Allowed to be overridden so as to make it polymorphic
     virtual void log(string log, level l) {
         auto localtime = asctime(ltm);
         localtime[strlen(localtime) - 1] = 0;
@@ -95,7 +106,7 @@ public:
         Filelog << localtime << "[" << levelToString[l] << "]" << log << "\n";
         Filelog.close();
     }
-
+// Allowed to be overridden so as to make it polymorphic
     virtual void printLog() {
         string s;
         ifstream getFile("latest.log");
@@ -107,8 +118,7 @@ public:
 
 Logger logger;
 
-// Struct for Date
-
+// used tm so as to get the date of today
 struct tm* today = localtime(&now);
 
 // Function to get auto rank
@@ -116,23 +126,28 @@ Rank getAutoRank(tm* date) {
 
     auto t = mktime(today);
     auto OtherDate = mktime(date);
+    // check if the date is 1 year ago , if yes return G
     if (t - OtherDate > 31104000) { // 1 year
         return G;
     }
+    // check if the date is 6 months ago , if yes return S
     else if (t - OtherDate > 15552000) { // 6 months
         return S;
     }
     else {
+        // if the date is less than 6 months, return B
         return B;
     }
 }
 
-// Enum for GiftCategory
+// Used Enum for GiftCategory so as to get the category of the gift
 enum GiftCategory {
     a, b, c, d
 };
 
-// Map to convert GiftCategory to string
+/** Map which combines the enum of GiftCatrgory and a pair of string(category)
+ and string(description) so as to print the category of the gift
+**/
 map<GiftCategory, pair<string, string>> GiftCategoryToString = {
         {a, make_pair("A" , "Audio & Video")},
         {b, make_pair("B", "Kitchenware")},
@@ -140,6 +155,7 @@ map<GiftCategory, pair<string, string>> GiftCategoryToString = {
         {d, make_pair("D", "Computer Accessories")},
 };
 
+// Map to convert the string to GiftCategory so as to get the category of the gift
 map<string, GiftCategory> StringToGiftCategory = {
         {"A" , a},
         {"B" , b},
@@ -147,7 +163,9 @@ map<string, GiftCategory> StringToGiftCategory = {
         {"D" , d}
 };
 
-// Class for Customer
+/** Class for Customer which inherits Logger and overrides the log and printLog function.
+It have a private log so as to store the logs of a specific customer
+**/
 class Customer : Logger {
 private:
     string privatelog;
@@ -155,8 +173,9 @@ private:
     Rank Ranking = B;
     int PointBalance = 0;
 public:
+    // Default constructor
     Customer() = default;
-
+// Constructor of Customer that takes in the CustomerID, Rank and PointBalance , usually used when adding a new customer
     Customer(string customerID, Rank rank, int pointBalance) {
         if (pointBalance < 0) {
             throw RangeException("Error: Point Balance < 0\n");
@@ -179,21 +198,25 @@ public:
     }
 
     void addPointBalance(int amount) {
+        //protect the point balance from being negative
         if (amount < 0) {
             cout << "No Input occur amount<0\n";
             return;
         }
         PointBalance += amount;
+        // Log the transaction by the override log method from Logger
         this->log((fmt::format("Customer with ID= '{0}' added Point = '{1}, new Point = {2}'", CustomerID, amount, PointBalance)), info);
     }
 
     bool minusPointBalance(int amount) {
         if (amount < 0) {
+            //protect the point balance from being negative
             cout << "No Input occur amount<0\n";
             return false;
         }
         if (PointBalance >= amount) {
             PointBalance -= amount;
+            // Log the transaction by the override log method from Logger
             this->log(fmt::format("Customer with ID= '{0}': deducted Point = '{1}, new Point = {2}'", CustomerID, amount, PointBalance), info);
             return true;
         }
@@ -202,18 +225,24 @@ public:
 
     void setPointBalance(int pointBalance) {
         if (pointBalance < 0) {
+            //protect the point balance from being negative
             cout << "No Input occur amount<0\n";
             this->log(fmt::format("ERROR: Customer with ID = '{0}' trying to set a negative Point , Want to set Point : {1} , Old Point: {2} ", CustomerID, pointBalance, this->PointBalance), error);
         }
         auto oldPoint = this->PointBalance;
         this->PointBalance = pointBalance;
+        // Log the transaction by the override log method from Logger
         this->log(fmt::format("Customer with ID = '{0}' set the Point as '{1}' , old point: {2}", CustomerID, pointBalance, oldPoint), info);
     }
 
+    // print the customer details
     void toString() {
         printf("%-15s %-4s %-d\n", CustomerID.c_str(), RanktoString[Ranking].c_str(), PointBalance);
     }
 
+    /** Override the log function from Logger so as to store the logs of a specific customer
+     * as well as log it to the super class so that it can be log on the log file
+     */
     void log(string Log, level l) override {
         auto localtime = asctime(ltm);
         localtime[strlen(localtime) - 1] = 0;
@@ -244,6 +273,7 @@ struct GiftRecord {
     int PointRequired{};
     enum GiftCategory giftCategory;
 
+    // Constructor for GiftRecord
     GiftRecord(const string& gift_id, const string& gift_discription, int price, int point_required) {
         giftCategory = StringToGiftCategory[gift_id.substr(0, 1)];
         GiftID = gift_id;
@@ -252,12 +282,13 @@ struct GiftRecord {
         PointRequired = point_required;
     }
 
+    // print the gift record details
     void toString() const {
         printf("%-5s %-7s %-10d %-17d %s\n", GiftCategoryToString[giftCategory].first.c_str(), GiftID.c_str(), price, PointRequired, GiftDiscription.c_str());
     }
 };
 
-// Vector to store list of gift records
+// Vector to store list of gift records. If using list, the sorting will be slower. Random access is faster in vector
 vector<GiftRecord> giftRecordList;
 
 // Function to check if a customer exists
@@ -277,10 +308,11 @@ Customer GetCustomer(string CustomerID) {
             return customer_list;
         }
     }
+    // Return empty customer
     return { "", G, -1 };
 }
 
-// Function to delete a customer
+// Function to delete a customer . To decrease the complexity of the code, used lambda function. Passing one annonymous customer object
 auto DeleteCustomer = [](string CustomerID) {
     customerList.erase(remove_if(customerList.begin(), customerList.end(), [&CustomerID](Customer o) {
         return CustomerID == o.getCustomerID();
@@ -289,6 +321,8 @@ auto DeleteCustomer = [](string CustomerID) {
 
 // Function to add a customer
 bool AddCustomer(Customer c) {
+
+    // Check if the customer exists
     if (HasCustomer(c.getCustomerID())) {
         return false;
     }
@@ -296,9 +330,12 @@ bool AddCustomer(Customer c) {
     if (c.getPointBalance() < 0) {
         cout << "No Input occur amount<0\n";
     }
+    // Add the customer to the list
     customerList.emplace_back(c);
+    // Print the customer details
     cout << fmt::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'\n",
                         c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance());
+    // Log the transaction
     logger.log(fmt::format("Added new Customer to CustomerID = '{0}' , CustomerRank = '{1}' , PointBalance= '{2}'",
                            c.getCustomerID(), RanktoString[c.getRank()], c.getPointBalance()), info);
     return true;
@@ -306,6 +343,7 @@ bool AddCustomer(Customer c) {
 
 // Function to modify a customer
 void ModifyCustomer(Customer c) {
+    // Delete the customer and add the new customer since vector does not have update function
     DeleteCustomer(c.getCustomerID());
     customerList.emplace_back(c);
 }
@@ -357,10 +395,15 @@ GiftRecord getGiftRecord(string giftId) {
             return item;
         }
     }
+    // Return empty gift record
     return { "", "", 0, 0 };
 }
 
-// Function to check if a date is correct
+/**Since unix time is used, the time is calculated by the number of seconds since 1970-01-01 00:00:00. However, we added 1900
+to the year and 1 to the month since the tm struct is 1900-based year and 0-based month
+**/
+
+// Function to check if a date is correct.If the date correct, return a tm struct of the date. Otherwise, throw an exception
 tm isCorrectDate(string date) {
     const char* dateToChar = date.data();
     if (strlen(dateToChar) != 8) {
@@ -372,12 +415,18 @@ tm isCorrectDate(string date) {
     catch (invalid_argument e) {
         throw invalid_argument("The date are not numbers!\n");
     }
+
+    // Check if the date is negative
     if (stoi(date) < 0) {
         throw RangeException("Error: Date < 0");
     }
+
+    // Get the year, month and day from the date of string
     int year = stoi(date.substr(4, 4)); //DDMMYYY
     int month = stoi(date.substr(2, 2));
     int day = stoi(date.substr(0, 2));
+
+    // Check if the year is correct
     if (year > today->tm_year + 1900) {
         throw RangeException(fmt::format("Year > {}\n", today->tm_year + 1900));
     }
@@ -403,6 +452,7 @@ tm isCorrectDate(string date) {
         case 8:
         case 10:
         case 12: {
+            // Check if the month has 31 days
             if (day > 31) {
                 throw RangeException("Error: Days > 31\n");
             }
@@ -410,12 +460,14 @@ tm isCorrectDate(string date) {
         }
         case 2: {
             if (year % 4 == 0) {
+                // Check if the year is a leap year
                 if (day > 29) {
                     throw RangeException("Error: Days > 29\n");
                 }
 
             }
             else if (day > 28) {
+                // Check if the year is not a leap year
                 throw RangeException("Error: Days > 28\n");
             }
             break;
@@ -424,6 +476,7 @@ tm isCorrectDate(string date) {
         case 6:
         case 9:
         case 11: {
+            // Check if the month has 30 days
             if (day > 30) {
                 throw RangeException("Error: Days > 30\n");
             }
@@ -460,6 +513,7 @@ void CustomerView() {
         return;
     }
     do {
+        // Get the old point balance so as to compare the new point balance
         int oldPoint = customer.getPointBalance();
         // Get customer ID
         try {
@@ -526,7 +580,8 @@ void CustomerView() {
                             // Check if category is valid
                             if (69 > static_cast<int>(*category) && static_cast<int>(*category) > 64) {
                                 sort(giftRecordList.begin(), giftRecordList.end(), // Sort gift records
-                                     [](GiftRecord a, GiftRecord b) { // Lambda function to sort gift records
+                                        // Lambda function to sort gift records , passing two annonymous gift record objects a and b
+                                     [](GiftRecord a, GiftRecord b) {
                                          if (a.PointRequired < b.PointRequired) {
                                              return true;
                                          }
@@ -536,6 +591,7 @@ void CustomerView() {
                                 int InternalCount = 0;
                                 times = 0;
                                 do {
+                                    // Get points required based on rank by using lambda function, passing annonymous customer object and gift record object
                                     auto getPointRequired = [](Customer c, GiftRecord g) {
                                         switch (c.getRank()) {
                                             case G:
@@ -547,10 +603,15 @@ void CustomerView() {
                                         }
                                     };
                                     printf("%-5s %-7s %-10s %-28s %s\n", "Type", "GiftID", "Price(HKD)", "Points Required", "Gift Description");
+                                    // For each gift record, print the gift record details
                                     for_each(giftRecordList.begin(), giftRecordList.end(),
+                                             // Lambda function to print gift record details, passing annonymous gift record object j and reference to category, customer and getPointRequired
+                                             // This lambda expression also used another lambda expression to get the points required based on rank
                                              [&category, &customer, &getPointRequired](GiftRecord j) {
                                                  auto PointRequired = getPointRequired(customer, j);
                                                  if (tolower(*GiftCategoryToString[j.giftCategory].first.c_str()) == tolower(*category)) {
+
+                                                     // Print gift record details. After converting the Point required of the customer by getting the discount based on the rank, it will be printed ref: PointRequired
                                                      printf("%-5s %-7s %-10d %-7d%-21s %s\n",
                                                             GiftCategoryToString[j.giftCategory].first.c_str(),
                                                             j.GiftID.c_str(),
@@ -569,6 +630,7 @@ void CustomerView() {
                                             do {
                                                 GiftRecord g = getGiftRecord(temp);
                                                 auto PointRequired = getPointRequired(customer, g);
+                                                // A lambda function to get the extra pay if the customer don't have enough points. Based on the rank of the customer, the extra pay will be calculated
                                                 auto extraPay = [&PointRequired](Customer c, const GiftRecord& g) {
                                                     switch (c.getRank()) {
                                                         case G:
@@ -591,7 +653,9 @@ void CustomerView() {
                                                 if (!temp.empty()) {
                                                     if (temp == "y") {
                                                         if (PointRequired <= customer.getPointBalance()) {
+                                                            // Deduct the points if the customer have enough points
                                                             customer.minusPointBalance((int)PointRequired);
+                                                            // log the transaction
                                                             customer.log(fmt::format("Customer with ID = '{0}' redeemed the gift with ID = '{1}' , Points Required = '{2}' , Price = $'{3}' , Description = '{4}'",
                                                                                      customer.getCustomerID(), g.GiftID, PointRequired, g.price, g.GiftDiscription), info);
                                                             cout << "redeemed!\n";
@@ -599,7 +663,9 @@ void CustomerView() {
                                                             break;
                                                         }
                                                         else {
+                                                            // Deduct the points and add the extra pay if the customer don't have enough points
                                                             customer.setPointBalance(0);
+                                                            // log the transaction
                                                             customer.log(fmt::format("Customer with ID = '{0}' redeemed the gift with ID = '{1}' , Points Required = '{2}' , Price = $'{3}' , Description = '{4}' , ExtraPay = ${5}",
                                                                                      customer.getCustomerID(), g.GiftID, PointRequired, g.price, g.GiftDiscription, extraPay(customer, g)), info);
                                                             cout << "redeemed!\n";
@@ -613,7 +679,6 @@ void CustomerView() {
                                                     else {
                                                         cout << "Wrong input received!\n";
                                                     }
-
                                                 }
                                                 else {
                                                     cout << "No input received!\n";
@@ -654,6 +719,7 @@ void CustomerView() {
                     break;
                 }
                 case 3:
+                    // modify the point balance of the customer
                     while (true) {
                         cout << "Your CC Points : " << customer.getPointBalance() << endl;
                         cout << "Set a new cc Points: ";
@@ -684,6 +750,7 @@ void CustomerView() {
         catch (exception e) {
             cout << "Wrong input , please try again!";
         }
+        // Print the new point balance of the customer as well as the change
         if (customer.getPointBalance() > oldPoint) {
             printf("Customer with ID: %s added Point of : %i (Old Point: %i , New Point: %i) ...Full logs on latest.log or view it on transaction\n",
                    customer.getCustomerID().c_str(), customer.getPointBalance() - oldPoint, oldPoint,
@@ -736,8 +803,16 @@ int main() {
                     break;
                 }
                 case 2: {
+                    // using the lambda function to sort the customer and gift record
                     sort(giftRecordList.begin(), giftRecordList.end(), [](GiftRecord a, GiftRecord b) {
                         int maxCount;
+                        /** Sorting method: if the length of the giftID of a is larger than b, maxCount will be the length of b,
+                        vise versa for a. Then, compare the giftID of a and b by converting them to lowercase and loop through the length of the giftID.
+                        If the character of a is larger than b, return false, else return true. If the character of a is smaller than b,
+                        return true, else return false.
+
+                         Vise versa for the customerID
+                        **/
                         if (strlen(a.GiftID.c_str()) > strlen(b.GiftID.c_str())) {
                             maxCount = strlen(b.GiftID.c_str());
                         }
@@ -772,12 +847,14 @@ int main() {
                         }
                         return false;
                     });
+                    // Print the customer and gift record details
                     printf("%-15s %-4s %-s\n", "Customer ID", "Rank", "Point Balance");
                     for (auto customer_list : customerList) {
                         customer_list.toString();
                     }
                     printf("%-5s : %s", "Type", "Gift Category\n");
                     for_each(GiftCategoryToString.begin(), GiftCategoryToString.end(), [](
+                            // Print the gift category by using the lambda function
                             pair<const GiftCategory, pair<basic_string<char>, basic_string<char>>> i) {
                         printf("%-5s : %s\n", GiftCategoryToString[i.first].first.c_str(), i.second.second.c_str());
                     });
@@ -828,6 +905,7 @@ int main() {
                                         cout << "Wrong Input , please try again!\n";
                                     }
                                     InternalCount++;
+                                    // If the input is wrong for 3 times, exit
                                     if (InternalCount == 3) {
                                         WrongInput = 3;
                                         throw invalid_argument("Wrong Input > 3\n");
@@ -887,6 +965,7 @@ int main() {
                                         InternalCount++;
                                         cout << "Please try again...\n";
                                     }
+                                    // If the input is wrong for 3 times, exit
                                     if (InternalCount == 3) {
                                         WrongInput = 3;
                                         throw invalid_argument("Wrong Input > 3\n");
@@ -927,6 +1006,7 @@ int main() {
                                         PointBalance = -1;
                                         InternalCount++;
                                     }
+                                    // If the input is wrong for 3 times, exit
                                     if (InternalCount >= 3) {
                                         WrongInput = 3;
                                         throw invalid_argument("Wrong Input > 3\n");
@@ -990,6 +1070,7 @@ int main() {
                             confirm = tolower(*confirm.c_str());
                             if (confirm == "y") {
                                 printf("%-13s %-9s %s\n", "Name", "Student ID", "Tutor Group");
+                                // Lambda function to print the group members
                                 auto k = [](string studentName, string studentID, string tutorGroup) {
                                     printf("%-13s %-9s %s\n", studentName.c_str(), studentID.c_str(), tutorGroup.c_str());
                                 };
@@ -1028,6 +1109,4 @@ int main() {
 
     } while (select != 6);
     return 0;
-
-
 }
