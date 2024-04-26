@@ -485,13 +485,18 @@ void CustomerView() {
                     float money;
                     try {
                         money = stof(tempmoney);
-                        if (money > 0) {
-                            int points = (int) (money / 250);
-                            customer.addPointBalance(points); // Add points to customer
-                            cout << "Points added!";
-                        } else {
+                        int tempsum = customer.getPointBalance() + (money / 250);
+                        if(tempsum > 0) { // Overflow check
+                            if (money > 0) {
+                                int points = (int) (money / 250);
+                                customer.addPointBalance(points); // Add points to customer
+                                cout << "Points added!";
+                            } else {
+                                cout << "Wrong Input , Please try again, amount < 0\n";
+                                break;
+                            }
+                        }else{
                             cout << "Wrong Input , Please try again, amount < 0\n";
-                            break;
                         }
                     } catch (exception e) {
                         cout << "Wrong input , PLease try again\n";
@@ -671,16 +676,36 @@ int main() {
                 }
                 case 2: {
                     sort(giftRecordList.begin(), giftRecordList.end(), [](GiftRecord a, GiftRecord b) {
-                        if (tolower(*a.GiftID) > tolower(*b.GiftID)) {
-                            return false;
+                        int maxCount;
+                        if (strlen(a.GiftID) > strlen(b.GiftID)){
+                            maxCount = strlen(b.GiftID);
+                        }else{
+                            maxCount = strlen(a.GiftID);
                         }
-                        return true;
+                        for (int i = 0; i < maxCount; ++i) {
+                            if(tolower(a.GiftID[i]) > tolower(b.GiftID[i])){
+                                return false;
+                            }else if (tolower(a.GiftID[i]) < tolower(b.GiftID[i])){
+                                return true;
+                            }
+                        }
+                        return false;
                     });
                     sort(customerList.begin(), customerList.end(), [](Customer a, Customer b) {
-                        if (tolower(*a.getCustomerID().c_str()) > tolower(*b.getCustomerID().c_str())) {
-                            return false;
+                        int maxCount;
+                        if (strlen(a.getCustomerID().c_str()) > strlen(b.getCustomerID().c_str())){
+                            maxCount = strlen(b.getCustomerID().c_str());
+                        }else{
+                            maxCount = strlen(a.getCustomerID().c_str());
                         }
-                        return true;
+                        for (int i = 0; i < maxCount; ++i) {
+                            if(tolower(a.getCustomerID().c_str()[i]) > tolower(b.getCustomerID().c_str()[i])){
+                                return false;
+                            }else if (tolower(a.getCustomerID().c_str()[i]) < tolower(b.getCustomerID().c_str()[i])){
+                                return true;
+                            }
+                        }
+                        return false;
                     });
                     printf("%-15s %-4s %-s\n", "Customer ID", "Rank", "Point Balance");
                     for (auto customer_list: customerList) {
