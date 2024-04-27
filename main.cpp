@@ -32,16 +32,14 @@ To decrease the complexity of the code, I used used lambda function.
 #include <fmt\core.h>
 //#include </home/runner/C20-Template-1/fmt/core.h>
 
+// Define namespace
+using namespace std;
+
 // Forward declaration of Customer class
 class Customer;
 
 // Forward declaration of GiftRecord class
 class GiftRecord;
-// Define namespace
-using namespace std;
-
-// Function to get a customer
-bool AddCustomer(Customer c);
 
 // Function to delete a customer
 bool hasLoadData = false;
@@ -51,11 +49,46 @@ enum Rank {
     G, S, B
 };
 
+// Enum for level of logs so as to differentiate the level between the logs
+enum level {
+    warn, error, info
+};
+
+// Used Enum for GiftCategory so as to get the category of the gift
+enum GiftCategory {
+    a, b, c, d
+};
+
 // Map to convert Rank to string so that them enum can be printed without using switch case or if else
 map<Rank, string> RanktoString = {
         {G, "G"},
         {S, "S"},
         {B, "B"}
+};
+
+//By using map we can convert the enum to string so as to print the level of logs
+map<level, string> levelToString = {
+        {warn, "WARN "},
+        {error, "ERROR"},
+        {info, "INFO "}
+};
+
+/** Map which combines the enum of GiftCatrgory and a pair of string(category)
+ and string(description) so as to print the category of the gift
+**/
+map<GiftCategory, pair<string, string>> GiftCategoryToString = {
+        {a, make_pair("A" , "Audio & Video")},
+        {b, make_pair("B", "Kitchenware")},
+        {c, make_pair("C", "Coupons")},
+        {d, make_pair("D", "Computer Accessories")},
+};
+
+// Map to convert the string to GiftCategory so as to get the category of the gift
+map<string, GiftCategory> StringToGiftCategory = {
+        {"A" , a},
+        {"B" , b},
+        {"C" , c},
+        {"D" , d}
 };
 
 // Time for logs
@@ -79,18 +112,6 @@ public:
     virtual const char* what() const throw() {
         return m_msg.c_str();
     }
-};
-
-// Enum for level of logs so as to differentiate the level between the logs
-enum level {
-    warn, error, info
-};
-
-//By using map we can convert the enum to string so as to print the level of logs
-map<level, string> levelToString = {
-        {warn, "WARN "},
-        {error, "ERROR"},
-        {info, "INFO "}
 };
 
 // Class for Logger
@@ -117,51 +138,6 @@ public:
 };
 
 Logger logger;
-
-// used tm so as to get the date of today
-struct tm* today = localtime(&now);
-
-// Function to get auto rank
-Rank getAutoRank(tm* date) {
-
-    auto t = mktime(today);
-    auto OtherDate = mktime(date);
-    // check if the date is 1 year ago , if yes return G
-    if (t - OtherDate > 31104000) { // 1 year
-        return G;
-    }
-    // check if the date is 6 months ago , if yes return S
-    else if (t - OtherDate > 15552000) { // 6 months
-        return S;
-    }
-    else {
-        // if the date is less than 6 months, return B
-        return B;
-    }
-}
-
-// Used Enum for GiftCategory so as to get the category of the gift
-enum GiftCategory {
-    a, b, c, d
-};
-
-/** Map which combines the enum of GiftCatrgory and a pair of string(category)
- and string(description) so as to print the category of the gift
-**/
-map<GiftCategory, pair<string, string>> GiftCategoryToString = {
-        {a, make_pair("A" , "Audio & Video")},
-        {b, make_pair("B", "Kitchenware")},
-        {c, make_pair("C", "Coupons")},
-        {d, make_pair("D", "Computer Accessories")},
-};
-
-// Map to convert the string to GiftCategory so as to get the category of the gift
-map<string, GiftCategory> StringToGiftCategory = {
-        {"A" , a},
-        {"B" , b},
-        {"C" , c},
-        {"D" , d}
-};
 
 /** Class for Customer which inherits Logger and overrides the log and printLog function.
 It have a private log so as to store the logs of a specific customer
@@ -291,6 +267,35 @@ struct GiftRecord {
 // Vector to store list of gift records. If using list, the sorting will be slower. Random access is faster in vector
 vector<GiftRecord> giftRecordList;
 
+// used tm so as to get the date of today
+struct tm* today = localtime(&now);
+
+// Function to delete a customer . To decrease the complexity of the code, used lambda function. Passing one annonymous customer object
+auto DeleteCustomer = [](string CustomerID) {
+    customerList.erase(remove_if(customerList.begin(), customerList.end(), [&CustomerID](Customer o) {
+        return CustomerID == o.getCustomerID();
+    }), customerList.end());
+};
+
+// Function to get auto rank
+Rank getAutoRank(tm* date) {
+
+    auto t = mktime(today);
+    auto OtherDate = mktime(date);
+    // check if the date is 1 year ago , if yes return G
+    if (t - OtherDate > 31104000) { // 1 year
+        return G;
+    }
+    // check if the date is 6 months ago , if yes return S
+    else if (t - OtherDate > 15552000) { // 6 months
+        return S;
+    }
+    else {
+        // if the date is less than 6 months, return B
+        return B;
+    }
+}
+
 // Function to check if a customer exists
 bool HasCustomer(string CustomerID) {
     for (auto customer_list : customerList) {
@@ -303,7 +308,7 @@ bool HasCustomer(string CustomerID) {
 
 // Function to get a customer
 Customer GetCustomer(string CustomerID) {
-    for (auto customer_list : customerList) {
+    for (Customer customer_list : customerList) {
         if (customer_list.getCustomerID() == CustomerID) {
             return customer_list;
         }
@@ -311,13 +316,6 @@ Customer GetCustomer(string CustomerID) {
     // Return empty customer
     return { "", G, -1 };
 }
-
-// Function to delete a customer . To decrease the complexity of the code, used lambda function. Passing one annonymous customer object
-auto DeleteCustomer = [](string CustomerID) {
-    customerList.erase(remove_if(customerList.begin(), customerList.end(), [&CustomerID](Customer o) {
-        return CustomerID == o.getCustomerID();
-    }), customerList.end());
-};
 
 // Function to add a customer
 bool AddCustomer(Customer c) {
