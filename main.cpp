@@ -29,6 +29,7 @@ To decrease the complexity of the code, I used used lambda function.
 #include <vector>
 #include <stdio.h>
 #include <fstream>
+#include <sstream>
 #include <fmt\core.h>
 //#include </home/runner/C20-Template-1/fmt/core.h>
 
