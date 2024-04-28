@@ -30,6 +30,7 @@ To decrease the complexity of the code, I used used lambda function.
 #include <stdio.h>
 #include <fstream>
 #include <fmt\core.h>
+#include <sstream>
 //#include </home/runner/C20-Template-1/fmt/core.h>
 
 // Define namespace
